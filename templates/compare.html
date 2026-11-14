@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% set active_page = 'compare' %}
+
+{% block title %}Regional Comparison — Omi AI{% endblock %}
+{% block page_title %}Regional Comparison{% endblock %}
+
+{% block content %}
+<div id="compare-root" class="page-stack" data-compare-endpoint="/api/compare" data-coverage-endpoint="/api/coverage" data-assistant-url="{{ url_for('assistant') }}">
+
+  <section class="card page-intro">
+    <div>
+      <p class="kicker-text">Coastal vs. inland</p>
+      <h1>Regional Comparison</h1>
+      <p>Do Lagos (coastal, urban) and Edo (inland forest) show the same environmental trend? Omi runs the same NASA analysis for both and compares direction, speed and statistical significance.</p>
+    </div>
+    <div class="region-pair" aria-hidden="true">
+      <span class="region-chip" style="--chip:#14B8A6">Lagos State</span>
+      <span class="region-vs">vs</span>
+      <span class="region-chip" style="--chip:#F97316">Edo State</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <form id="compare-form" class="investigation-form compare-form" novalidate>
+      <div class="form-field">
+        <label for="cmp-variable" class="form-label">Variable</label>
+        <select id="cmp-variable" class="form-select">
+          <option value="temperature">Temperature (°C)</option>
+          <option value="rainfall">Rainfall (mm)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="cmp-start" class="form-label">From year</label>
+        <input id="cmp-start" type="number" class="form-input" min="1981" max="2025" value="1981" inputmode="numeric">
+      </div>
+      <div class="form-field">
+        <label for="cmp-end" class="form-label">To year</label>
+        <input id="cmp-end" type="number" class="form-input" min="1981" max="2025" value="2025" inputmode="numeric">
+      </div>
+      <div class="form-field">
+        <label for="cmp-detail" class="form-label">Explanation</label>
+        <select id="cmp-detail" class="form-select">
+          <option value="simple">Simple</option>
+          <option value="detailed" selected>Detailed</option>
+          <option value="research">Research</option>
+        </select>
+      </div>
+      <div class="form-field investigation-submit">
+        <button type="submit" id="compare-btn" class="btn btn-primary">Compare regions</button>
+      </div>
+    </form>
+  </section>
+
+  <div id="compare-status" class="notice is-hidden" role="status" aria-live="polite"></div>
+
+  <div id="compare-results" class="results-stack is-hidden">
+    <div id="compare-cards" class="compare-cards"></div>
+
+    <article class="card overview-panel">
+      <div class="card-header">
+        <div>
+          <h3 style="font-size: 1rem;" id="compare-chart-title">Both regions</h3>
+          <p style="font-size: 0.8125rem;">Yearly values with each region's fitted trend (dashed)</p>
+        </div>
+        <div class="segmented" role="group" aria-label="Chart view">
+          <button type="button" class="segmented-btn is-active" data-cmp-mode="annual" aria-pressed="true">Yearly</button>
+          <button type="button" class="segmented-btn" data-cmp-mode="difference" aria-pressed="false">Difference</button>
+          <button type="button" class="segmented-btn" data-cmp-mode="monthly" aria-pressed="false">Monthly</button>
+        </div>
+      </div>
+      <div id="compare-chart" class="card-body chart-container"></div>
+    </article>
+
+    <div class="results-grid">
+      <article class="card overview-panel">
+        <div class="card-header">
+          <div>
+            <h3 style="font-size: 1rem;">What the comparison shows</h3>
+            <p style="font-size: 0.8125rem;">Built from the calculated results</p>
+          </div>
+          <a id="compare-ask-btn" href="{{ url_for('assistant') }}" class="btn btn-secondary btn-sm">Ask Omi about this</a>
+        </div>
+        <div id="compare-explanation" class="card-body explanation-text"></div>
+      </article>
+      <article class="card overview-panel">
+        <div class="card-header">
+          <div>
+            <h3 style="font-size: 1rem;">Side-by-side statistics</h3>
+            <p style="font-size: 0.8125rem;">Same dataset, units, period and method</p>
+          </div>
+        </div>
+        <div id="compare-table" class="card-body preview-table-wrap"></div>
+      </article>
+    </div>
+
+    <article class="card overview-panel">
+      <div class="card-header">
+        <div>
+          <h3 style="font-size: 1rem;">Detailed statistics per region</h3>
+        </div>
+      </div>
+      <div id="compare-stats" class="card-body preview-table-wrap"></div>
+    </article>
+
+    <article class="card overview-panel">
+      <div class="card-header">
+        <div><h3 style="font-size: 1rem;">Data source, method &amp; limitations</h3></div>
+      </div>
+      <div id="compare-source" class="card-body source-notes"></div>
+    </article>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
+<script src="{{ url_for('static', filename='js/compare.js') }}"></script>
+{% endblock %}

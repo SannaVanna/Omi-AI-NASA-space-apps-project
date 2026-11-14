@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="User avatar">
+  <title>Default user avatar (replace static/img/avatar-default.svg to change)</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DDF3EF"/>
+      <stop offset="1" stop-color="#B9E3F2"/>
+    </linearGradient>
+    <clipPath id="c"><circle cx="64" cy="64" r="64"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="128" height="128" fill="url(#bg)"/>
+    <!-- shirt -->
+    <path d="M14 128c2-24 20-36 50-36s48 12 50 36z" fill="#168C83"/>
+    <path d="M50 94l14 16 14-16" fill="#FFFFFF"/>
+    <path d="M56 92h16l-8 10z" fill="#10766F"/>
+    <!-- neck -->
+    <path d="M54 76h20v18c0 6-20 6-20 0z" fill="#6B4430"/>
+    <!-- ears -->
+    <ellipse cx="38" cy="58" rx="5" ry="8" fill="#7A4D36"/>
+    <ellipse cx="90" cy="58" rx="5" ry="8" fill="#7A4D36"/>
+    <!-- face -->
+    <ellipse cx="64" cy="56" rx="25" ry="29" fill="#8A5A3F"/>
+    <!-- hair (short, low fade) -->
+    <path d="M39 50c0-20 11-30 25-30s25 10 25 30c-3-7-9-11-14-12-6 4-17 4-24 0-6 1-10 5-12 12z" fill="#1C1410"/>
+    <path d="M40 54c0-3 0-6 1-8M88 54c0-3 0-6-1-8" stroke="#1C1410" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- eyebrows -->
+    <path d="M49 49c4-2 8-2 11 0M68 49c3-2 7-2 11 0" stroke="#1C1410" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+    <!-- eyes -->
+    <ellipse cx="54.5" cy="57" rx="3" ry="3.4" fill="#1C1410"/>
+    <ellipse cx="73.5" cy="57" rx="3" ry="3.4" fill="#1C1410"/>
+    <circle cx="55.5" cy="56" r="0.9" fill="#FFFFFF"/>
+    <circle cx="74.5" cy="56" r="0.9" fill="#FFFFFF"/>
+    <!-- nose -->
+    <path d="M64 60c-1 4-3 7-4 8 2 1 6 1 8 0-1-1-3-4-4-8z" fill="#74482F"/>
+    <!-- beard shadow + smile -->
+    <path d="M44 66c2 13 10 19 20 19s18-6 20-19c-3 6-8 10-20 10s-17-4-20-10z" fill="#3A2A20" opacity="0.55"/>
+    <path d="M56 73c4 3 12 3 16 0" stroke="#3B1F14" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>

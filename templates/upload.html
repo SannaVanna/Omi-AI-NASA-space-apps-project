@@ -10,8 +10,7 @@
 
 {% block content %}
 <div id="upload-workspace"
-     data-upload-endpoint="/api/upload"
-     data-analysis-endpoint="/api/analysis">
+     data-analysis-endpoint="/api/uploads/analyze">
 
   <!-- Progress Stepper -->
   <nav class="stepper-bar" aria-label="Dataset analysis steps">
@@ -81,6 +80,17 @@
       </div>
 
       <div id="file-error-banner" class="notice notice-error is-hidden" style="margin-top: 16px;" role="alert"></div>
+
+      <div class="quick-tips" aria-label="Quick tips">
+        <strong class="quick-tips-title">Quick tips</strong>
+        <ul>
+          <li>Include a date column (e.g. 2020-01-01, 2020-01 or 2020)</li>
+          <li>Use numbers only in the measurement column</li>
+          <li>Check the preview before you analyse</li>
+          <li>Monthly data unlocks the Seasonal Mann-Kendall test</li>
+        </ul>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('sample_file', name='lagos_monthly_temperature_nasa_power.csv') }}" download>Download a sample CSV (real NASA data)</a>
+      </div>
     </div>
   </section>
 
@@ -191,7 +201,7 @@
     <div class="card-header">
       <div>
         <h2 id="step4-heading" style="font-size: 1.125rem;">Step 4: Analysis Results</h2>
-        <p id="results-overview-meta" style="font-size: 0.875rem;">Statistical findings returned from the Flask backend</p>
+        <p id="results-overview-meta" style="font-size: 0.875rem;">Statistical findings calculated by the Omi analysis engine</p>
       </div>
       <span class="meta-line" id="results-trend-badge">Trend Summary</span>
     </div>
@@ -205,7 +215,7 @@
         <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
           <div>
             <h3 style="font-size: 1rem;">Time-Series Trend Chart</h3>
-            <p style="font-size: 0.8125rem;" id="results-chart-subtitle">Plotted directly from backend-returned observations</p>
+            <p style="font-size: 0.8125rem;" id="results-chart-subtitle">Your observations with the fitted linear trend (dashed)</p>
           </div>
           <span class="mono-value" style="font-size: 0.8125rem; color: var(--text-muted);" id="results-date-range"></span>
         </div>

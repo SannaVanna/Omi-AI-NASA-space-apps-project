@@ -9,9 +9,8 @@
   <!-- Profile Identity Header -->
   <section class="card profile-header-card">
     <div class="profile-identity">
-      <div id="profile-avatar-circle" class="avatar-circle" aria-hidden="true">
-        {{ user.initials if user and user.initials else 'DR' }}
-      </div>
+      <img class="profile-avatar-img" src="{{ url_for('static', filename=avatar_image) }}" alt="Profile picture" width="88" height="88">
+      <span id="profile-avatar-circle" class="sr-only">{{ user.initials if user and user.initials else 'DR' }}</span>
       <div>
         <p class="kicker-text" style="margin-bottom: 4px;">Researcher Account</p>
         <h1 id="profile-display-name" style="font-size: 1.5rem; margin-bottom: 4px;">

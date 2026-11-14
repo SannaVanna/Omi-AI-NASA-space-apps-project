@@ -5,6 +5,7 @@ from routes.uploads import uploads_bp
 from routes.assistant import assistant_bp
 from routes.profile import profile_bp
 from routes.settings import settings_bp
+from routes.challenge import challenge_bp
 
 
 def register_blueprints(app):
@@ -37,4 +38,9 @@ def register_blueprints(app):
     app.register_blueprint(
         settings_bp,
         url_prefix="/api/settings"
+    )
+
+    app.register_blueprint(
+        challenge_bp,
+        url_prefix="/api/challenge"
     )

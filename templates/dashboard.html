@@ -2,196 +2,292 @@
 {% set active_page = 'dashboard' %}
 
 {% block title %}Overview — Omi AI{% endblock %}
-{% block page_title %}Environmental Overview{% endblock %}
+{% block page_title %}Environmental Dashboard{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+{% endblock %}
 
 {% block content %}
 <div id="dashboard-root"
      data-upload-url="{{ url_for('upload') }}"
-     data-region-endpoint="/api/regions"
-     data-analysis-endpoint="/api/analysis"
-     data-comparison-endpoint="/api/regions/compare">
+     data-assistant-url="{{ url_for('assistant') }}"
+     data-coverage-endpoint="/api/coverage"
+     data-analyze-endpoint="/api/analyze"
+     data-compare-endpoint="/api/compare"
+     data-regions-endpoint="/api/regions">
 
-  <!-- Welcome Banner -->
-  <section class="welcome-banner" aria-labelledby="welcome-heading">
-    <div>
-      <p class="kicker-text">Environmental Research Workspace</p>
-      <h1 id="welcome-heading">Good day, Researcher.</h1>
-      <p class="welcome-banner-sub">Explore environmental patterns and understand how conditions change over time.</p>
+  <!-- Welcome hero -->
+  <section class="welcome-hero" aria-labelledby="welcome-heading">
+    <div class="welcome-hero-text">
+      <p class="kicker-text">Earth System Trend Detective</p>
+      <h1 id="welcome-heading">Welcome to Omi AI <span aria-hidden="true">👋</span></h1>
+      <p class="welcome-banner-sub">Explore environmental changes and discover what the data reveals.</p>
       <p class="welcome-banner-note">
-        Investigate historical changes in temperature and rainfall across Nigerian study regions or upload your own environmental time-series CSV file for statistical trend detection.
+        Pick Lagos or Edo on the map, choose temperature or rainfall, and Omi analyses real NASA records (1981 onwards), detects the trend, compares regions and explains the result.
       </p>
+      <div class="welcome-banner-actions">
+        <button type="button" id="explore-trends-btn" class="btn btn-primary">Explore the map</button>
+        <a href="{{ url_for('assistant') }}" class="btn btn-secondary">Ask Omi AI</a>
+        <a href="{{ url_for('upload') }}" class="btn btn-ghost">Upload a dataset</a>
+      </div>
     </div>
-    <div class="welcome-banner-actions">
-      <a href="{{ url_for('upload') }}" class="btn btn-primary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-        <span>Analyse Dataset</span>
-      </a>
-      <a href="{{ url_for('assistant') }}" class="btn btn-secondary">Ask AI Assistant</a>
+    <div class="weather-hero" id="weather-hero" data-endpoint="/api/weather" data-img-base="{{ url_for('static', filename='img/weather/') }}">
+      {% set first_name = (current_profile.name.split()[0] if current_profile and current_profile.name else '') %}
+      <div class="omi-greet">
+        <img class="omi-greet-mascot" src="{{ url_for('static', filename=mascot_image) }}" alt="Omi, the Omi AI mascot">
+        <div class="speech-bubble">
+          <strong>Hi{{ ' ' ~ first_name if first_name else ' there' }}!</strong>
+          <span id="wx-greeting">Here's your weather update.</span>
+        </div>
+      </div>
+
+      <div class="weather-card" aria-live="polite">
+        <div class="wx-head">
+          <div class="wx-place">
+            <div class="wx-tabs" role="tablist" aria-label="Weather location">
+              <button type="button" class="wx-tab is-active" data-wx-region="lagos" role="tab" aria-selected="true">Lagos</button>
+              <button type="button" class="wx-tab" data-wx-region="edo" role="tab" aria-selected="false">Edo</button>
+            </div>
+            <div class="wx-temp"><span id="wx-temp">--</span><span class="wx-deg">°C</span></div>
+            <div class="wx-cond" id="wx-cond">Loading live weather…</div>
+          </div>
+          <img class="wx-icon" id="wx-icon" src="{{ url_for('static', filename='img/weather/partly-day.svg') }}" alt="" width="120" height="135">
+        </div>
+
+        <div class="wx-metrics">
+          <span class="wx-metric">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7C9 7 6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-3-7-6-11.3z" fill="currentColor"/></svg>
+            Humidity <strong id="wx-humidity">--</strong>
+          </span>
+          <span class="wx-metric">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 8h11a3 3 0 1 0-3-3"/><path d="M3 12h16a3 3 0 1 1-3 3"/><path d="M3 16h8"/></svg>
+            Wind <strong id="wx-wind">--</strong>
+          </span>
+        </div>
+
+        <div class="wx-alert" id="wx-alert">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7C9 7 6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-3-7-6-11.3z" fill="currentColor"/></svg>
+          <span id="wx-alert-text">Checking for rain…</span>
+        </div>
+
+        <div class="wx-hours" id="wx-hours" aria-label="Hourly forecast"></div>
+
+        <div class="wx-source" id="wx-source">Live forecast</div>
+      </div>
     </div>
   </section>
 
-  <!-- Backend Feedback Banner (Shown when region request is loading, succeeds, or unavailable) -->
   <div id="dashboard-status-banner" class="notice notice-info is-hidden" role="status" aria-live="polite"></div>
 
-  <!-- Study Regions -->
-  <section aria-labelledby="regions-heading">
-    <div class="section-row-head">
+  <!-- Explore: map + form -->
+  <section class="card explore-card" aria-labelledby="investigate-heading">
+    <div class="card-header">
       <div>
-        <h2 id="regions-heading">Study Regions</h2>
-        <p style="font-size: 0.875rem;">Select a Nigerian study region to query historical observations from the Flask backend.</p>
+        <h2 id="investigate-heading" style="font-size: 1.0625rem;">Explore Environmental Data</h2>
+        <p style="font-size: 0.8125rem;" id="coverage-note">Select a location, variable and time period to begin your analysis.</p>
       </div>
-      <span class="meta-line">2 primary zones</span>
     </div>
 
-    <div class="region-cards-grid">
-      <article class="card card-interactive region-card" data-region-card="lagos">
-        <div class="region-card-top">
-          <div>
-            <div class="meta-line" style="margin-bottom: 6px;">
-              <span>South-West Nigeria</span>
-              <span class="meta-sep" aria-hidden="true">·</span>
-              <span>Coastal urban environment</span>
-            </div>
-            <h3 class="region-card-title">Lagos State</h3>
-            <p style="font-size: 0.875rem;">Atlantic coastal metropolis with maritime humidity, urban heat dynamics, and intense monsoon rainfall.</p>
+    <form id="investigation-form" class="investigation-form" novalidate>
+      <div class="form-field">
+        <label for="inv-region" class="form-label">Location</label>
+        <select id="inv-region" name="region" class="form-select">
+          <option value="lagos">Lagos State</option>
+          <option value="edo">Edo State</option>
+          <option value="both">Compare Lagos &amp; Edo</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="inv-variable" class="form-label">Variable</label>
+        <select id="inv-variable" name="variable" class="form-select">
+          <option value="temperature">Temperature (°C)</option>
+          <option value="rainfall">Rainfall (mm)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="inv-source" class="form-label">Data source</label>
+        <select id="inv-source" name="source" class="form-select">
+          <option value="power">NASA POWER (MERRA-2)</option>
+          <option value="imerg">NASA GPM IMERG (satellite rainfall)</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="inv-start" class="form-label">Period from</label>
+        <input id="inv-start" name="start_year" type="number" class="form-input" min="1981" max="2025" value="1981" inputmode="numeric">
+      </div>
+      <div class="form-field">
+        <label for="inv-end" class="form-label">Period to</label>
+        <input id="inv-end" name="end_year" type="number" class="form-input" min="1981" max="2025" value="2025" inputmode="numeric">
+      </div>
+      <div class="form-field">
+        <label for="inv-detail" class="form-label">Explanation</label>
+        <select id="inv-detail" name="detail" class="form-select">
+          <option value="simple">Simple</option>
+          <option value="detailed" selected>Detailed</option>
+          <option value="research">Research</option>
+        </select>
+      </div>
+      <div class="form-field investigation-submit">
+        <button type="submit" id="investigate-btn" class="btn btn-primary">
+          <span>Analyse Data</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+
+    <div class="map-layout" id="study-regions">
+      <div class="map-panel">
+        <div class="map-toolbar">
+          <span class="meta-line"><strong>Study regions</strong> · click Lagos or Edo on the map to select it</span>
+          <div class="segmented" role="group" aria-label="Map view">
+            <button type="button" class="segmented-btn" id="map-world-btn" aria-pressed="false">World</button>
+            <button type="button" class="segmented-btn is-active" id="map-nigeria-btn" aria-pressed="true">Nigeria</button>
           </div>
-          <span class="region-coords">6.5244° N, 3.3792° E</span>
         </div>
+        <div id="region-map" class="region-map" role="application" aria-label="World map with selectable study regions Lagos State and Edo State in Nigeria"></div>
+        <p class="map-caption meta-line">Dots mark the NASA POWER data point for each state. Use the layers button (top-left) to change the basemap or show the MERRA-2 grid cells (~55 × 69 km), and the NASA data panel (top-right) to overlay monthly temperature or rainfall. Boundaries: Natural Earth. No API keys are used.</p>
+      </div>
 
-        <div class="region-card-footer">
-          <span class="meta-line" data-region-status="lagos">Ready to query backend</span>
-          <button type="button" class="btn btn-primary btn-sm" data-analyse-region="lagos">
-            <span>Analyse Region</span>
-          </button>
-        </div>
-      </article>
-
-      <article class="region-card" data-region-card="edo">
-        <div class="region-card-top">
-          <div>
-            <div class="meta-line" style="margin-bottom: 6px;">
-              <span>South-South Nigeria</span>
-              <span class="meta-sep" aria-hidden="true">·</span>
-              <span>Inland and forest transition zone</span>
+      <div class="map-side" aria-label="Study regions">
+        <article class="card card-interactive region-card region-card-compact" data-region-card="lagos">
+          <div class="region-card-top">
+            <div>
+              <div class="meta-line" style="margin-bottom: 4px;">
+                <span class="region-dot" style="--dot:#14B8A6" aria-hidden="true"></span>
+                <span>South-West · Coastal urban</span>
+              </div>
+              <h3 class="region-card-title">Lagos State</h3>
+              <p style="font-size: 0.8125rem;">Atlantic coastal metropolis with maritime humidity, urban heat and intense monsoon rainfall.</p>
             </div>
-            <h3 class="region-card-title">Edo State</h3>
-            <p style="font-size: 0.875rem;">Inland tropical forest-transition zone ideal for studying seasonal rainfall shifts and temperature baselines.</p>
           </div>
-          <span class="region-coords">6.5438° N, 5.8987° E</span>
-        </div>
+          <div class="region-card-footer">
+            <span class="meta-line"><span class="region-coords">6.5244° N, 3.3792° E</span> · <span data-region-status="lagos">NASA POWER · MERRA-2</span></span>
+            <button type="button" class="btn btn-primary btn-sm" data-analyse-region="lagos">Analyse</button>
+          </div>
+        </article>
 
-        <div class="region-card-footer">
-          <span class="meta-line" data-region-status="edo">Ready to query backend</span>
-          <button type="button" class="btn btn-primary btn-sm" data-analyse-region="edo">
-            <span>Analyse Region</span>
-          </button>
-        </div>
-      </article>
+        <article class="card card-interactive region-card region-card-compact" data-region-card="edo">
+          <div class="region-card-top">
+            <div>
+              <div class="meta-line" style="margin-bottom: 4px;">
+                <span class="region-dot" style="--dot:#F97316" aria-hidden="true"></span>
+                <span>South-South · Inland forest</span>
+              </div>
+              <h3 class="region-card-title">Edo State</h3>
+              <p style="font-size: 0.8125rem;">Inland tropical forest-transition zone for studying seasonal rainfall shifts and temperature baselines.</p>
+            </div>
+          </div>
+          <div class="region-card-footer">
+            <span class="meta-line"><span class="region-coords">6.5438° N, 5.8987° E</span> · <span data-region-status="edo">NASA POWER · MERRA-2</span></span>
+            <button type="button" class="btn btn-primary btn-sm" data-analyse-region="edo">Analyse</button>
+          </div>
+        </article>
+
+        <button type="button" id="map-compare-btn" class="btn btn-secondary compare-both-btn">Compare Lagos &amp; Edo</button>
+      </div>
     </div>
   </section>
 
-  <!-- Environmental Overview -->
+  <!-- Investigation Results -->
   <section id="environmental-overview" aria-labelledby="overview-heading">
     <div class="section-row-head">
       <div>
-        <h2 id="overview-heading">Environmental Overview</h2>
-        <p style="font-size: 0.875rem;">Real observations and trend summaries appear below once a region or dataset is analysed.</p>
+        <h2 id="overview-heading">Investigation Results</h2>
+        <p style="font-size: 0.875rem;">Every figure below is calculated from NASA records by the Omi analysis engine.</p>
       </div>
-      <div id="overview-active-region" class="meta-line">No active dataset connected</div>
+      <div id="overview-active-region" class="meta-line">No investigation run yet</div>
     </div>
 
-    <div class="overview-grid">
-      <!-- Temperature Trends -->
-      <article class="card overview-panel">
-        <div class="card-header">
-          <div>
-            <h3 style="font-size: 1rem;">Temperature Trends</h3>
-            <p style="font-size: 0.8125rem;">Surface temperature trajectory over time</p>
-          </div>
-          <span class="mono-value" style="font-size: 0.8125rem; color: var(--text-muted);" id="temp-unit-label">°C</span>
-        </div>
-        <div id="temperature-panel-body" class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
-            </svg>
-          </div>
-          <p>No environmental dataset has been analysed yet. Start by selecting a region or uploading your own time-series data.</p>
-          <a href="{{ url_for('upload') }}" class="btn btn-secondary btn-sm">Analyse Dataset</a>
-        </div>
-      </article>
+    <div id="results-empty" class="card empty-state">
+      <div class="empty-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <p>Pick a region on the map or press <strong>Analyse Data</strong> to see the chart, trend statistics and an explanation.</p>
+    </div>
 
-      <!-- Rainfall Trends -->
-      <article class="card overview-panel">
-        <div class="card-header">
-          <div>
-            <h3 style="font-size: 1rem;">Rainfall Trends</h3>
-            <p style="font-size: 0.8125rem;">Precipitation volume and seasonal variation</p>
-          </div>
-          <span class="mono-value" style="font-size: 0.8125rem; color: var(--text-muted);" id="rain-unit-label">mm</span>
-        </div>
-        <div id="rainfall-panel-body" class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/>
-              <line x1="8" y1="19" x2="8" y2="21"/>
-              <line x1="12" y1="17" x2="12" y2="21"/>
-              <line x1="16" y1="19" x2="16" y2="21"/>
-            </svg>
-          </div>
-          <p>No environmental dataset has been analysed yet. Start by selecting a region or uploading your own time-series data.</p>
-          <a href="{{ url_for('upload') }}" class="btn btn-secondary btn-sm">Analyse Dataset</a>
-        </div>
-      </article>
+    <div id="results-panel" class="results-stack is-hidden">
+      <div id="results-kpis" class="kpi-strip kpi-strip-six"></div>
 
-      <!-- Historical Observations -->
-      <article class="card overview-panel">
-        <div class="card-header">
-          <div>
-            <h3 style="font-size: 1rem;">Historical Observations</h3>
-            <p style="font-size: 0.8125rem;">Chronological records and baseline summary</p>
+      <div class="chart-insight-grid">
+        <article class="card overview-panel">
+          <div class="card-header">
+            <div>
+              <h3 style="font-size: 1rem;" id="chart-title">Time series</h3>
+              <p style="font-size: 0.8125rem;" id="chart-subtitle"></p>
+            </div>
+            <div class="segmented" role="group" aria-label="Chart resolution">
+              <button type="button" class="segmented-btn is-active" data-chart-mode="annual" aria-pressed="true">Yearly</button>
+              <button type="button" class="segmented-btn" data-chart-mode="monthly" aria-pressed="false">Monthly</button>
+            </div>
           </div>
-        </div>
-        <div id="observations-panel-body" class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-          </div>
-          <p>Historical observation records will appear here once a study region responds or a CSV time-series file is analysed.</p>
-          <a href="{{ url_for('upload') }}" class="btn btn-secondary btn-sm">Analyse Dataset</a>
-        </div>
-      </article>
+          <div id="results-chart" class="card-body chart-container"></div>
+        </article>
 
-      <!-- Regional Comparison -->
-      <article class="card overview-panel">
+        <aside class="card insight-card" aria-labelledby="insight-heading">
+          <div class="insight-card-body">
+            <p class="insight-kicker">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/>
+                <path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>
+              </svg>
+              <span id="insight-heading">AI Insight</span>
+            </p>
+            <p id="results-insight" class="insight-text"></p>
+            <a id="insight-ask-btn" href="{{ url_for('assistant') }}" class="btn btn-navy btn-sm" data-ask-omi>Ask Omi AI →</a>
+          </div>
+          <div class="insight-card-art" aria-hidden="true">
+            <svg viewBox="0 0 120 80"><circle cx="86" cy="58" r="34" fill="#DDF3EF"/><circle cx="86" cy="58" r="22" fill="#2CB1A5" opacity="0.55"/><path d="M70 30 C 64 18, 74 8, 86 10 C 84 22, 78 28, 70 30 Z" fill="#5FAE77"/></svg>
+          </div>
+        </aside>
+      </div>
+
+      <div class="results-grid">
+        <article class="card overview-panel">
+          <div class="card-header">
+            <div>
+              <h3 style="font-size: 1rem;">What this means</h3>
+              <p style="font-size: 0.8125rem;" id="explanation-meta">Explanation generated from the calculated results</p>
+            </div>
+            <a id="ask-omi-btn" href="{{ url_for('assistant') }}" class="btn btn-secondary btn-sm" data-ask-omi>Ask Omi about this</a>
+          </div>
+          <div id="results-explanation" class="card-body explanation-text"></div>
+        </article>
+
+        <article class="card overview-panel">
+          <div class="card-header">
+            <div>
+              <h3 style="font-size: 1rem;">Statistical results</h3>
+              <p style="font-size: 0.8125rem;">Linear regression, Sen's slope and Mann-Kendall tests</p>
+            </div>
+          </div>
+          <div id="results-stats" class="card-body preview-table-wrap"></div>
+        </article>
+      </div>
+
+      <article id="comparison-card" class="card overview-panel is-hidden">
         <div class="card-header">
           <div>
             <h3 style="font-size: 1rem;">Regional Comparison</h3>
             <p style="font-size: 0.8125rem;">Lagos State (coastal) vs. Edo State (inland forest)</p>
           </div>
-          <button type="button" id="compare-regions-btn" class="btn btn-ghost btn-sm">Compare Regions</button>
         </div>
-        <div id="comparison-panel-body" class="empty-state">
-          <div class="empty-state-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="18" cy="5" r="3"/>
-              <circle cx="6" cy="12" r="3"/>
-              <circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
+        <div id="comparison-panel-body" class="card-body preview-table-wrap"></div>
+      </article>
+
+      <article class="card overview-panel">
+        <div class="card-header">
+          <div>
+            <h3 style="font-size: 1rem;">Data source, method &amp; limitations</h3>
+            <p style="font-size: 0.8125rem;">Where the numbers come from and how to read them responsibly</p>
           </div>
-          <p>No environmental dataset has been analysed yet. Select Lagos or Edo above, or upload regional datasets to compare patterns.</p>
-          <a href="{{ url_for('upload') }}" class="btn btn-secondary btn-sm">Analyse Dataset</a>
         </div>
+        <div id="results-source" class="card-body source-notes"></div>
       </article>
     </div>
   </section>
@@ -217,7 +313,7 @@
       <a href="{{ url_for('assistant') }}" class="card card-interactive quick-action-card">
         <div>
           <div class="quick-action-title">Ask the AI Assistant</div>
-          <div class="quick-action-desc">Clarify Mann-Kendall tests, rainfall trends, or comparisons</div>
+          <div class="quick-action-desc">Type or speak: trends, Mann-Kendall tests, comparisons</div>
         </div>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="5" y1="12" x2="19" y2="12"/>
@@ -225,21 +321,25 @@
         </svg>
       </a>
 
-      <button type="button" id="explore-trends-btn" class="card card-interactive quick-action-card">
+      <a href="#study-regions" class="card card-interactive quick-action-card" data-scroll-map>
         <div>
-          <div class="quick-action-title">Explore Historical Trends</div>
-          <div class="quick-action-desc">Jump to regional panels and query available records</div>
+          <div class="quick-action-title">Compare Regions</div>
+          <div class="quick-action-desc">See whether Lagos and Edo show the same trend</div>
         </div>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="5" y1="12" x2="19" y2="12"/>
           <polyline points="12 5 19 12 12 19"/>
         </svg>
-      </button>
+      </a>
     </div>
   </section>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
+<script src="{{ url_for('static', filename='js/region_map.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/weather.js') }}"></script>
 {% endblock %}

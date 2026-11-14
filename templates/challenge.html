@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% set active_page = 'challenge' %}
+
+{% block title %}Trend Detective Challenge — Omi AI{% endblock %}
+{% block page_title %}Trend Detective Challenge{% endblock %}
+
+{% block content %}
+<div id="challenge-root" class="page-stack" data-new-endpoint="/api/challenge/new" data-answer-endpoint="/api/challenge/answer">
+
+  <section class="card page-intro">
+    <div>
+      <p class="kicker-text">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px">
+          <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+        </svg>
+        Interactive Environmental Literacy
+      </p>
+      <h1>Trend Detective Challenge</h1>
+      <p>Inspect the first part of a real NASA climate record, classify its long-term pattern, then reveal the hidden observations alongside the full Mann-Kendall statistical test.</p>
+    </div>
+    <div class="score-grid" aria-label="Your score">
+      <div class="score-cell"><div class="kpi-label">Completed</div><div class="kpi-value" id="score-completed">0</div></div>
+      <div class="score-cell"><div class="kpi-label">Correct</div><div class="kpi-value score-correct" id="score-correct">0</div></div>
+      <div class="score-cell"><div class="kpi-label">Accuracy</div><div class="kpi-value" id="score-accuracy">0%</div></div>
+    </div>
+  </section>
+
+  <section class="card challenge-controls">
+    <div class="form-field">
+      <label for="ch-region" class="form-label">Study Region</label>
+      <select id="ch-region" class="form-select">
+        <option value="random">Random (Lagos or Edo)</option>
+        <option value="lagos">Lagos State</option>
+        <option value="edo">Edo State</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="ch-variable" class="form-label">Variable</label>
+      <select id="ch-variable" class="form-select">
+        <option value="random">Temperature or Rainfall</option>
+        <option value="temperature">Temperature</option>
+        <option value="rainfall">Rainfall</option>
+      </select>
+    </div>
+    <div class="challenge-controls-actions">
+      <button type="button" id="ch-reset" class="btn btn-ghost btn-sm">Reset score</button>
+      <button type="button" id="ch-new" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        <span>Load New Challenge</span>
+      </button>
+    </div>
+  </section>
+
+  <div id="ch-status" class="notice is-hidden" role="status" aria-live="polite"></div>
+
+  <section class="card overview-panel" id="ch-card" aria-live="polite">
+    <div class="card-header">
+      <div>
+        <div class="meta-line" id="ch-meta">Loading a real NASA record…</div>
+        <h3 style="font-size: 1.05rem;" id="ch-title">Time series</h3>
+      </div>
+      <span class="mono-value meta-line" id="ch-count"></span>
+    </div>
+    <div id="ch-chart" class="card-body chart-container"></div>
+
+    <div class="card-body challenge-question" id="ch-question">
+      <p class="challenge-prompt">Based on the visible observations, what is the <strong>long-term trend</strong> over the whole period?</p>
+      <div class="guess-grid" role="group" aria-label="Your answer">
+        <button type="button" class="guess-btn" data-guess="increasing">
+          <span class="guess-icon">↗</span><span>Increasing</span>
+        </button>
+        <button type="button" class="guess-btn" data-guess="no trend">
+          <span class="guess-icon">→</span><span>No significant trend</span>
+        </button>
+        <button type="button" class="guess-btn" data-guess="decreasing">
+          <span class="guess-icon">↘</span><span>Decreasing</span>
+        </button>
+      </div>
+      <p class="meta-line">Tip: look past the seasonal ups and downs — the test compares each month with the same month in other years.</p>
+    </div>
+
+    <div class="card-body is-hidden" id="ch-result">
+      <div class="challenge-verdict" id="ch-verdict"></div>
+      <div class="kpi-strip" id="ch-stats"></div>
+      <p class="explanation-text" id="ch-explanation"></p>
+      <div class="challenge-next">
+        <button type="button" class="btn btn-primary" id="ch-next">Next challenge →</button>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/challenge.js') }}"></script>
+{% endblock %}

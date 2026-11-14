@@ -1,17 +1,17 @@
-Flask
-Flask-Cors
-python-dotenv
-requests
-earthaccess
-pandas
-numpy
-plotly
-pymannkendall
-statsmodels
-scipy
-langchain-google-genai
-langgraph
-langchain-core
-xarray
-netCDF4
-pytest
+# Web
+Flask>=3.0,<4
+Flask-Cors>=4.0
+python-dotenv>=1.0
+requests>=2.31
+
+# Data processing and statistics
+pandas>=2.1
+numpy>=1.26
+scipy>=1.11
+pymannkendall>=1.4.3
+
+# Production server (Linux/macOS hosting; on Windows use `python app.py` or waitress)
+gunicorn>=22.0; sys_platform != "win32"
+
+# Tests
+pytest>=8.0

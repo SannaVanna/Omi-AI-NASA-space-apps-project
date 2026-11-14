@@ -7,7 +7,10 @@
 {% block content %}
 <div id="assistant-root"
      class="assistant-layout"
-     data-assistant-endpoint="/api/assistant/chat">
+     data-assistant-endpoint="/api/assistant/chat"
+     data-voice-endpoint="/api/assistant/voice"
+     data-avatar-src="{{ url_for('static', filename=avatar_image) }}"
+     data-mascot-src="{{ url_for('static', filename=mascot_image) }}">
 
   <!-- Left Column: Introduction & Suggested Questions -->
   <aside style="display: flex; flex-direction: column; gap: 20px;">
@@ -15,27 +18,41 @@
       <p class="kicker-text">Environmental Methodology Guide</p>
       <h1 style="font-size: 1.25rem; margin-bottom: 10px;">Omi AI Research Assistant</h1>
       <p style="font-size: 0.875rem; line-height: 1.6;">
-        Ask questions about environmental time-series analysis, statistical trend tests, rainfall variability, or comparing Lagos and Edo climate zones.
+        Ask Omi to investigate temperature or rainfall in Lagos or Edo, compare the two, or explain a method. Omi retrieves NASA POWER data, runs the statistics and explains the real results — by text or by voice.
       </p>
       <div class="meta-line" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
-        <span>Connected via Flask endpoint</span>
+        <span id="assistant-engine-label">Answers are grounded in NASA POWER analysis results</span>
       </div>
+    </section>
+
+    <section class="card" style="padding: 22px;" aria-labelledby="detail-heading">
+      <h2 id="detail-heading" style="font-size: 0.95rem; margin-bottom: 12px;">Explanation detail</h2>
+      <div class="segmented segmented-full" role="group" aria-label="Explanation detail">
+        <button type="button" class="segmented-btn" data-detail="simple" aria-pressed="false">Simple</button>
+        <button type="button" class="segmented-btn is-active" data-detail="detailed" aria-pressed="true">Detailed</button>
+        <button type="button" class="segmented-btn" data-detail="research" aria-pressed="false">Research</button>
+      </div>
+      <label class="check-option" style="margin-top: 14px;">
+        <input type="checkbox" id="speak-replies-toggle">
+        <span>Read replies aloud</span>
+      </label>
+      <p class="form-hint" id="voice-support-hint" style="margin-top: 8px;">Use the microphone button to talk to Omi.</p>
     </section>
 
     <section class="card" style="padding: 22px;" aria-labelledby="suggested-questions-heading">
       <h2 id="suggested-questions-heading" style="font-size: 0.95rem; margin-bottom: 12px;">Suggested Questions</h2>
       <div class="suggested-list">
-        <button type="button" class="suggested-btn" data-suggested-question="What does a temperature trend tell us?">
-          What does a temperature trend tell us?
+        <button type="button" class="suggested-btn" data-suggested-question="How has temperature changed in Lagos over the last 20 years?">
+          How has temperature changed in Lagos over the last 20 years?
         </button>
-        <button type="button" class="suggested-btn" data-suggested-question="How do scientists analyse rainfall patterns?">
-          How do scientists analyse rainfall patterns?
+        <button type="button" class="suggested-btn" data-suggested-question="I want to investigate how rainfall has changed in Lagos over the years.">
+          I want to investigate how rainfall has changed in Lagos.
         </button>
         <button type="button" class="suggested-btn" data-suggested-question="What is the Mann-Kendall test?">
           What is the Mann-Kendall test?
         </button>
-        <button type="button" class="suggested-btn" data-suggested-question="How can I compare Lagos and Edo?">
-          How can I compare Lagos and Edo?
+        <button type="button" class="suggested-btn" data-suggested-question="Compare rainfall in Lagos and Edo from 1981 to 2025.">
+          Compare rainfall in Lagos and Edo from 1981 to 2025.
         </button>
         <button type="button" class="suggested-btn" data-suggested-question="What does statistical significance mean?">
           What does statistical significance mean?
@@ -49,7 +66,7 @@
     <div class="card-header">
       <div>
         <h2 style="font-size: 1rem;">Research Conversation</h2>
-        <p style="font-size: 0.8125rem;">Messages are sent directly to your Flask AI backend.</p>
+        <p style="font-size: 0.8125rem;">Charts and statistics appear inside the conversation.</p>
       </div>
       <button type="button" id="clear-chat-btn" class="btn btn-ghost btn-sm">Clear Thread</button>
     </div>
@@ -57,15 +74,16 @@
     <div id="assistant-status-notice" class="notice notice-warning is-hidden" style="margin: 14px 20px 0;" role="status" aria-live="polite"></div>
 
     <div id="chat-messages" class="chat-messages" aria-live="polite">
-      <div class="chat-bubble-row is-assistant">
-        <span class="chat-sender">Omi AI Assistant</span>
-        <div class="chat-bubble">Hello Researcher. Select one of the suggested questions on the left or enter your own environmental research question below to query the Flask AI service.</div>
+      <div class="chat-bubble-row is-assistant has-avatar">
+        <img class="chat-avatar" src="{{ url_for('static', filename=mascot_image) }}" alt="" width="32" height="32">
+        <span class="chat-sender">Omi AI</span>
+        <div class="chat-bubble">Hi, I'm Omi. Ask me how temperature or rainfall has changed in Lagos or Edo — for example, "How has rainfall changed in Lagos since 2001?" — or tap the microphone and ask out loud.</div>
       </div>
     </div>
 
     <div id="chat-loading-row" class="is-hidden" style="padding: 0 24px 12px; display: flex; align-items: center; gap: 10px; font-size: 0.8125rem; color: var(--text-muted);">
       <span class="spinner spinner-dark" aria-hidden="true"></span>
-      <span>Waiting for response from Flask AI endpoint...</span>
+      <span>Omi is retrieving data and analysing…</span>
     </div>
 
     <form id="assistant-chat-form" class="chat-composer" novalidate>
@@ -73,8 +91,16 @@
       <textarea id="chat-question-input"
                 class="chat-input"
                 rows="1"
-                placeholder="Ask about temperature trends, Mann-Kendall tests, or regional comparisons..."
+                placeholder="Ask Omi about the climate…"
                 required></textarea>
+      <button type="button" id="voice-btn" class="btn btn-secondary voice-btn" aria-label="Speak your question" aria-pressed="false" title="Speak your question">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
       <button type="submit" id="send-question-btn" class="btn btn-primary">
         <span>Send</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -84,9 +110,18 @@
       </button>
     </form>
   </section>
+  <!-- Right column: Omi mascot -->
+  <aside class="card mascot-panel" aria-label="Omi">
+    <div class="mascot-halo">
+      <img src="{{ url_for('static', filename=mascot_image) }}" alt="Omi, the Omi AI mascot" class="mascot-img">
+    </div>
+    <p class="mascot-caption">Smarter insights.<br>Greener tomorrow.</p>
+    <p class="mascot-sub">Hi, I'm Omi. I analyse real NASA data and explain what it means.</p>
+  </aside>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
 <script src="{{ url_for('static', filename='js/assistant.js') }}"></script>
 {% endblock %}

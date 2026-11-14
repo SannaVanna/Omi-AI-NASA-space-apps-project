@@ -11,8 +11,7 @@
     var workspace = document.getElementById('upload-workspace');
     if (!workspace) return;
 
-    var uploadEndpoint = workspace.getAttribute('data-upload-endpoint') || '/api/upload';
-    var analysisEndpoint = workspace.getAttribute('data-analysis-endpoint') || '/api/analysis';
+    var analysisEndpoint = workspace.getAttribute('data-analysis-endpoint') || '/api/uploads/analyze';
 
     var fileInput = document.getElementById('csv-file-input');
     var dropzone = document.getElementById('csv-dropzone');
@@ -398,28 +397,28 @@
       step4Section.classList.remove('is-hidden');
       updateStepper(4);
 
-      var summary = payload.summary || payload.statistics || payload;
+      var fmt = window.OmiUI.formatNumber;
+      var fmtP = window.OmiUI.formatP;
+      var esc = window.OmiUI.escapeHtml;
+      var stats = payload.statistics || {};
+      var trend = payload.trend || {};
+      var lr = trend.linear_regression || {};
+      var sen = trend.sens_slope || {};
+      var mk = trend.mann_kendall || {};
       var unit = payload.unit || (unitInput ? unitInput.value.trim() : '');
-      var count = payload.valid_observations ?? payload.observations_count ?? summary.count ?? summary.n ?? '—';
-      var meanVal = summary.mean ?? payload.mean ?? '—';
-      var minVal = summary.min ?? payload.min ?? '—';
-      var maxVal = summary.max ?? payload.max ?? '—';
-      var trendDir = payload.trend_direction ?? summary.trend_direction ?? payload.trend ?? 'Computed';
-
-      var dateRangeText = '—';
-      if (payload.date_range && typeof payload.date_range === 'object') {
-        dateRangeText = (payload.date_range.start || '') + ' to ' + (payload.date_range.end || '');
-      } else if (payload.date_range) {
-        dateRangeText = String(payload.date_range);
-      }
+      var range = payload.date_range || {};
+      var dateRangeText = (range.start || '—') + ' to ' + (range.end || '—');
+      var conf = Math.round((sen.confidence_level || 0.95) * 100);
 
       var overviewMeta = document.getElementById('results-overview-meta');
       if (overviewMeta) {
-        overviewMeta.textContent = (currentFile ? currentFile.name : 'Uploaded CSV') + ' · ' + (variableSelect ? variableSelect.value : 'variable') + ' (' + unit + ')';
+        overviewMeta.textContent = (currentFile ? currentFile.name : 'Uploaded CSV') + ' · ' +
+          (variableSelect ? variableSelect.options[variableSelect.selectedIndex].text : 'variable') + ' (' + unit + ')' +
+          (payload.region ? ' · ' + payload.region : '');
       }
 
       var trendBadge = document.getElementById('results-trend-badge');
-      if (trendBadge) trendBadge.textContent = 'Trend: ' + trendDir;
+      if (trendBadge) trendBadge.textContent = 'Trend: ' + (trend.direction || '—');
 
       var rangeEl = document.getElementById('results-date-range');
       if (rangeEl) rangeEl.textContent = dateRangeText;
@@ -427,53 +426,51 @@
       var kpiStrip = document.getElementById('results-kpi-strip');
       if (kpiStrip) {
         kpiStrip.innerHTML =
-          '<div class="kpi-cell"><div class="kpi-label">Valid Observations</div><div class="kpi-value">' + window.OmiUI.escapeHtml(count) + '</div></div>' +
-          '<div class="kpi-cell"><div class="kpi-label">Mean Value</div><div class="kpi-value">' + window.OmiUI.escapeHtml(meanVal) + ' <span style="font-size:0.8rem;color:var(--text-muted);">' + window.OmiUI.escapeHtml(unit) + '</span></div></div>' +
-          '<div class="kpi-cell"><div class="kpi-label">Minimum / Maximum</div><div class="kpi-value">' + window.OmiUI.escapeHtml(minVal) + ' / ' + window.OmiUI.escapeHtml(maxVal) + '</div></div>' +
-          '<div class="kpi-cell"><div class="kpi-label">Trend Direction</div><div class="kpi-value">' + window.OmiUI.escapeHtml(trendDir) + '</div></div>';
+          '<div class="kpi-cell"><div class="kpi-label">Valid Observations</div><div class="kpi-value">' + esc(stats.count) + '</div></div>' +
+          '<div class="kpi-cell"><div class="kpi-label">Mean Value</div><div class="kpi-value">' + fmt(stats.mean, 2) + ' <span class="kpi-unit">' + esc(unit) + '</span></div></div>' +
+          '<div class="kpi-cell"><div class="kpi-label">Rate (Sen\'s slope)</div><div class="kpi-value">' + fmt(sen.slope_per_decade, 3, true) + ' <span class="kpi-unit">' + esc(unit) + ' per decade</span></div></div>' +
+          '<div class="kpi-cell"><div class="kpi-label">Trend Direction</div><div class="kpi-value kpi-text">' + esc(trend.direction || '—') + '</div></div>';
       }
 
-      // Render trend chart strictly from actual returned points
       var chartContainer = document.getElementById('results-chart-container');
-      var rawSeries = payload.series || payload.time_series || payload.data || [];
-      if (Array.isArray(rawSeries) && rawSeries.length > 0 && chartContainer) {
-        var mapped = rawSeries.map(function (pt) {
-          return {
-            label: String(pt.date || pt.time || pt.timestamp || pt.label || ''),
-            value: Number(pt.value !== undefined ? pt.value : pt.y)
-          };
+      var series = payload.series || [];
+      if (chartContainer) {
+        window.OmiUI.renderChart(chartContainer, {
+          unit: unit,
+          legend: true,
+          series: [
+            { name: 'Observations', color: '#168C83', points: series.map(function (pt) { return { label: pt.date, value: pt.value }; }) },
+            { name: 'Linear trend', color: '#102A43', dashed: true, showPoints: false, points: (trend.trend_line || []).map(function (pt) { return { label: pt.date, value: pt.value }; }) }
+          ]
         });
-        window.OmiUI.renderLineChartSvg(chartContainer, mapped, { unit: unit, color: '#168C83' });
-      } else if (chartContainer) {
-        chartContainer.innerHTML = '<div class="empty-state"><p>The backend returned summary statistics without individual time-series coordinates for charting.</p></div>';
       }
 
-      // Statistical results table
-      var statsObj = payload.statistical_results || payload.trend_analysis || payload.mann_kendall || {};
-      var statPairs = Object.keys(statsObj).map(function (k) {
-        return [k.replace(/_/g, ' '), typeof statsObj[k] === 'object' ? JSON.stringify(statsObj[k]) : statsObj[k]];
-      });
-      if (statPairs.length === 0) {
-        statPairs = [
-          ['Trend Direction', trendDir],
-          ['Date Range', dateRangeText]
-        ];
+      var statPairs = [
+        ['Trend direction', trend.direction || '—'],
+        ["Sen's slope", fmt(sen.slope_per_year, 4, true) + ' ' + unit + ' per year'],
+        ["Sen's slope " + conf + '% CI', fmt((sen.confidence_interval_per_year || [])[0], 4, true) + ' to ' + fmt((sen.confidence_interval_per_year || [])[1], 4, true)],
+        ['Linear regression slope', fmt(lr.slope_per_year, 4, true) + ' ' + unit + ' per year'],
+        ['Regression ' + conf + '% CI', fmt((lr.confidence_interval_per_year || [])[0], 4, true) + ' to ' + fmt((lr.confidence_interval_per_year || [])[1], 4, true)],
+        ['Regression R² / p-value', fmt(lr.r_squared, 3) + ' / ' + fmtP(lr.p_value)],
+        [mk.test || 'Mann-Kendall', 'trend: ' + (mk.trend || '—') + ', tau ' + fmt(mk.tau, 3) + ', p ' + fmtP(mk.p_value)],
+        ['Statistically significant (α = ' + (trend.alpha || 0.05) + ')', trend.significant ? 'Yes' : 'No']
+      ];
+      if (trend.seasonal_mann_kendall) {
+        statPairs.push([trend.seasonal_mann_kendall.test, 'trend: ' + trend.seasonal_mann_kendall.trend + ', p ' + fmtP(trend.seasonal_mann_kendall.p_value)]);
       }
       renderKeyValTable(document.getElementById('results-statistics-table'), statPairs);
 
-      // Data quality table
-      var qualityObj = payload.data_quality || payload.quality || {};
-      var qualityPairs = Object.keys(qualityObj).map(function (k) {
-        return [k.replace(/_/g, ' '), typeof qualityObj[k] === 'object' ? JSON.stringify(qualityObj[k]) : qualityObj[k]];
-      });
-      if (qualityPairs.length === 0) {
-        qualityPairs = [
-          ['Valid Observations', count],
-          ['Selected Date Column', dateSelect ? dateSelect.value : '—'],
-          ['Selected Value Column', valueSelect ? valueSelect.value : '—']
-        ];
-      }
-      renderKeyValTable(document.getElementById('results-quality-table'), qualityPairs);
+      var q = payload.data_quality || {};
+      renderKeyValTable(document.getElementById('results-quality-table'), [
+        ['Rows in file', q.rows_in_file],
+        ['Valid observations used', q.valid_observations],
+        ['Rows removed (invalid / duplicate dates)', q.rows_removed],
+        ['Date range', dateRangeText],
+        ['Mean / median', fmt(stats.mean, 3) + ' / ' + fmt(stats.median, 3) + ' ' + unit],
+        ['Minimum / maximum', fmt(stats.minimum, 3) + ' / ' + fmt(stats.maximum, 3) + ' ' + unit],
+        ['Standard deviation', fmt(stats.standard_deviation, 3) + ' ' + unit],
+        ['Date column / value column', (q.date_column || '—') + ' / ' + (q.value_column || '—')]
+      ]);
 
       step4Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -523,6 +520,7 @@
         if (descriptionInput && descriptionInput.value.trim()) {
           formData.append('description', descriptionInput.value.trim());
         }
+        formData.append('alpha', window.OmiUI.getPreferences().alpha);
 
         // Send to analysis endpoint (and handle non-OK or unimplemented backend honestly)
         fetch(analysisEndpoint, {
@@ -551,7 +549,7 @@
           })
           .catch(function (err) {
             showValidationError(
-              'Analysis could not be completed by the Flask backend (' + err.message + '). Ensure your Flask server handles POST ' + analysisEndpoint + ' (or configure data-analysis-endpoint to match ' + uploadEndpoint + ').'
+              'Analysis could not be completed: ' + err.message
             );
           })
           .finally(function () {

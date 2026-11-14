@@ -1,37 +1,26 @@
+"""Descriptive statistics for a series of measurements."""
 
 import numpy as np
-import pymannkendall as mk
+
+from processing.trend_analysis import clean_number
 
 
 def calculate_statistics(values):
+    try:
+        array = np.asarray(list(values), dtype=float)
+    except (TypeError, ValueError) as error:
+        raise ValueError("Values must be numeric.") from error
 
-    values = np.asarray(
-        values,
-        dtype=float
-    )
+    array = array[np.isfinite(array)]
 
-    values = values[np.isfinite(values)]
-
-    if len(values) < 3:
-        raise ValueError(
-            "At least three valid values are required."
-        )
-
-    result = mk.original_test(values)
+    if len(array) < 3:
+        raise ValueError("At least three valid values are required.")
 
     return {
-        "count": int(len(values)),
-        "mean": float(np.mean(values)),
-        "median": float(np.median(values)),
-        "minimum": float(np.min(values)),
-        "maximum": float(np.max(values)),
-        "standard_deviation": float(
-            np.std(values, ddof=1)
-        ),
-        "mann_kendall": {
-            "trend": str(result.trend),
-            "p_value": float(result.p),
-            "tau": float(result.Tau),
-            "significant": bool(result.p < 0.05)
-        }
+        "count": int(len(array)),
+        "mean": clean_number(np.mean(array)),
+        "median": clean_number(np.median(array)),
+        "minimum": clean_number(np.min(array)),
+        "maximum": clean_number(np.max(array)),
+        "standard_deviation": clean_number(np.std(array, ddof=1)),
     }
