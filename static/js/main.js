@@ -297,6 +297,9 @@
             banner.className = 'notice notice-success';
             banner.textContent = 'Profile saved.';
           }
+          return res.json().then(function (d) {
+            try { localStorage.setItem('omi_profile', JSON.stringify(d.profile)); } catch (e) {}
+          });
         })
         .catch(function () {
           if (banner) {

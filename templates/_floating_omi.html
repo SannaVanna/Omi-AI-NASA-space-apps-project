@@ -1,0 +1,28 @@
+<div class="fomi" data-fomi>
+  <button type="button" class="fomi-peek" data-fomi-toggle aria-expanded="false" aria-controls="fomi-panel" title="Ask Omi">
+    <img src="{{ url_for('static', filename='img/omi/omi-wave.webp') }}" alt="Ask Omi" width="120" height="108">
+  </button>
+  <section class="fomi-panel" id="fomi-panel" aria-label="Ask Omi" hidden>
+    <header class="fomi-head">
+      <strong>Hi! Need weather info or travel advice?</strong>
+      <button type="button" class="fomi-close" data-fomi-toggle aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="fomi-log" data-fomi-log aria-live="polite">
+      <div class="fomi-suggest">
+        <button type="button" data-fomi-ask="Will it rain in Lagos today?">☔ Will it rain in Lagos today?</button>
+        <button type="button" data-fomi-ask="What's the weather in Benin City now?">🌤️ Weather in Benin City now?</button>
+        <button type="button" data-fomi-ask="Is Edo getting warmer since 1981?">📈 Is Edo getting warmer?</button>
+      </div>
+    </div>
+    <form class="fomi-form" data-fomi-form>
+      <label class="sr-only" for="fomi-input">Ask Omi</label>
+      <input id="fomi-input" type="text" maxlength="300" placeholder="Ask Omi anything…" autocomplete="off">
+      <button type="submit" class="fomi-send" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+      </button>
+    </form>
+    <a class="fomi-more" href="{{ url_for('assistant') }}">Open full chat & voice →</a>
+  </section>
+</div>

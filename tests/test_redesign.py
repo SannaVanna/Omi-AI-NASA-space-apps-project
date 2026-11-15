@@ -39,7 +39,7 @@ def test_comparison_includes_summary(client):
 
 
 def test_sidebar_shows_saved_profile(client):
-    assert b"Guest Researcher" in client.get("/dashboard").data
+    assert b"Create free account" in client.get("/dashboard").data
     client.post("/api/profile", json={"name": "Bolaji Adigun", "email": "b@example.org"})
     html = client.get("/assistant").data.decode()
     assert "Bolaji Adigun" in html and "sidebar-user-avatar" in html

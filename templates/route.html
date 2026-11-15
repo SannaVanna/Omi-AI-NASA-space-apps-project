@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% set active_page = 'route' %}
+{% block title %}Route Weather — Omi AI{% endblock %}
+{% block page_title %}Route Weather{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">{% endblock %}
+
+{% block content %}
+<div class="v2-page" data-route-page>
+  <div class="v2-head">
+    <div>
+      <h1>Smart Route Weather</h1>
+      <p>Check the weather along your journey before you leave.</p>
+    </div>
+  </div>
+
+  <div class="route-layout">
+    <section class="v2-card route-form-card">
+      <form class="route-form" data-route-form>
+        <label class="route-field"><span class="route-dot route-dot--from" aria-hidden="true"></span><span class="form-label">From</span>
+          <select class="form-select" name="from" data-route-from></select></label>
+        <button type="button" class="route-swap" data-route-swap aria-label="Swap start and destination">⇅</button>
+        <label class="route-field"><span class="route-dot route-dot--to" aria-hidden="true"></span><span class="form-label">To</span>
+          <select class="form-select" name="to" data-route-to></select></label>
+        <button type="submit" class="btn btn-primary">Check route weather</button>
+      </form>
+      <div class="route-result" data-route-result aria-live="polite">
+        <p class="muted">Pick where you're starting and where you're going.</p>
+      </div>
+    </section>
+    <section class="v2-card route-map-card">
+      <div id="route-map" class="route-map" role="img" aria-label="Map of the route"></div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages-v2.js') }}"></script>
+{% endblock %}

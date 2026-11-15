@@ -66,6 +66,7 @@
         (data.updated ? ' · updated ' + esc(timeLabel(data.updated)) : '') +
         (data.stale ? ' · <span class="wx-stale">showing last available forecast</span>' : '');
       root.classList.remove('is-error');
+      document.dispatchEvent(new CustomEvent('omi:weather', { detail: data }));
     }
 
     function showError() {

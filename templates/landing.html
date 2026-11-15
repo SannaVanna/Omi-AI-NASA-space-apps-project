@@ -1,426 +1,225 @@
 {% extends "base.html" %}
 {% set active_page = 'landing' %}
+{% from "_omi_mood.html" import omi_mood %}
 
-{% block title %}Omi AI — Earth System Trend Detective{% endblock %}
-{% block body_class %}landing-page{% endblock %}
+{% block title %}Omi AI — Know the weather today. Understand the climate of tomorrow.{% endblock %}
+{% block body_class %}landing-v2{% endblock %}
 
 {% block shell %}
-<header class="landing-header">
-  <div class="landing-header-inner">
-    <a href="{{ url_for('landing') }}" class="brand-link">
-      <span class="brand-mark" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M3.6 9h16.8"/>
-          <path d="M3.6 15h16.8"/>
-          <path d="M12 3a13 13 0 0 1 0 18"/>
-        </svg>
-      </span>
-      <span>Omi AI</span>
-    </a>
-
-    <nav class="landing-nav" aria-label="Primary navigation">
-      <a href="#how-it-works">How it works</a>
+<header class="lv-nav-wrap">
+  <nav class="lv-nav" aria-label="Primary">
+    <a href="{{ url_for('landing') }}" class="lv-brand">{% include "_logo.html" %}<span>Omi AI</span></a>
+    <div class="lv-links">
       <a href="#features">Features</a>
-      <a href="#regions">Study regions</a>
-      <a href="#about">About</a>
-    </nav>
-
-    <div class="landing-header-actions">
-      <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-sm">Open Workspace</a>
-      <button id="landing-menu-toggle" type="button" class="icon-btn mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
+      <a href="#how">How it works</a>
+      <a href="#data">For researchers</a>
+      <a href="#sdgs">SDGs</a>
+      <a href="#meet-omi">Meet Omi</a>
+    </div>
+    <div class="lv-actions">
+      {% if signed_in %}
+      <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-sm">Open dashboard</a>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="lv-login">Log in</a>
+      <a href="{{ url_for('signup') }}" class="btn btn-primary btn-sm">Get started</a>
+      {% endif %}
+      <button type="button" class="icon-btn lv-menu" id="landing-menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="landing-mobile-drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
     </div>
-  </div>
-
-  <div id="landing-mobile-drawer" class="landing-mobile-drawer" aria-label="Mobile navigation">
-    <a href="#how-it-works">How it works</a>
-    <a href="#features">Features</a>
-    <a href="#regions">Study regions</a>
-    <a href="#about">About</a>
-    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Open Workspace</a>
+  </nav>
+  <div class="lv-drawer" id="landing-mobile-drawer">
+    <a href="#features">Features</a><a href="#how">How it works</a><a href="#data">For researchers</a><a href="#sdgs">SDGs</a>
+    <a href="{{ url_for('dashboard') }}">Open dashboard</a>
+    {% if not signed_in %}<a href="{{ url_for('login') }}">Log in</a>{% endif %}
   </div>
 </header>
 
-<main>
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-grid">
+<main class="lv">
+  <!-- Hero -->
+  <section class="lv-hero">
+    <div class="lv-hero-text">
+      <span class="lv-pill">🇳🇬 Nigeria's AI weather &amp; climate assistant · NASA Space Apps 2026</span>
+      <h1>Know the weather today. Understand the climate of tomorrow.</h1>
+      <p>Omi turns live forecasts and 45 years of NASA satellite records into clear answers for Lagos, Edo and beyond: alerts, safer routes, and climate trends you can trust.</p>
+      <div class="lv-cta">
+        <a href="{{ url_for('dashboard') if signed_in else url_for('signup') }}" class="btn btn-primary btn-lg">Get started free</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-lg">Try it without an account</a>
+      </div>
+      <ul class="lv-sources" aria-label="Data sources">
+        <li>NASA POWER</li><li>MERRA-2</li><li>GPM IMERG</li><li>MET Norway</li>
+      </ul>
+    </div>
+    <div class="lv-hero-visual" aria-hidden="false">
+      <div class="lv-glow" aria-hidden="true"></div>
+      <img class="lv-hero-omi" src="{{ url_for('static', filename='img/omi/omi-wave.webp') }}" alt="Omi, the Omi AI mascot, waving" width="420" height="378">
+      <div class="lv-wx" data-lv-weather aria-live="polite">
+        <span class="lv-wx-place">Lagos · now</span>
+        <div class="lv-wx-row"><strong data-lv-temp>--°C</strong><img data-lv-icon src="{{ url_for('static', filename='img/weather/partly-day.svg') }}" alt="" width="64" height="72"></div>
+        <span data-lv-cond>Loading live weather…</span>
+        <span class="lv-wx-alert" data-lv-alert>Checking for rain…</span>
+      </div>
+      <div class="lv-trend">
+        <span class="muted">NASA trend · Lagos temperature</span>
+        <strong data-lv-trend>+0.17 °C per decade</strong>
+        <div class="lv-trend-chart" data-lv-chart></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof strip -->
+  <section class="lv-proof" aria-label="Omi AI in numbers">
+    <div><strong>45 years</strong><span>of NASA climate records (1981–2025)</span></div>
+    <div><strong>2 regions</strong><span>Lagos &amp; Edo, analysed side by side</span></div>
+    <div><strong>3 modes</strong><span>Simple, Learn and Research views</span></div>
+    <div><strong>Hourly</strong><span>live forecast and rain alerts</span></div>
+  </section>
+
+  <!-- Features -->
+  <section class="lv-section" id="features">
+    <div class="lv-head">
+      <p class="kicker">What Omi does</p>
+      <h2>Everything you need to plan around the weather</h2>
+      <p>From the next hour to the next decade, in one friendly assistant.</p>
+    </div>
+    <div class="lv-features">
+      {% for icon, color, title, text, link in [
+        ('☁️', '#2563EB', 'Live weather', 'Current conditions and an hourly forecast for cities across Nigeria, refreshed every 15 minutes.', 'dashboard'),
+        ('⚠️', '#E5484D', 'Smart alerts', 'Rain, storm, heat and harmattan warnings for the places you save.', 'alerts_page'),
+        ('🛣️', '#0EA5A0', 'Route weather', 'See the weather along your journey and pick the safest time to travel.', 'route_page'),
+        ('📈', '#F08C00', 'Climate Trend Detective', "Mann-Kendall and Sen's slope on NASA records show whether change is real, not noise.", 'challenge'),
+        ('🎙️', '#7C3AED', 'Ask Omi: text & voice', 'Ask in plain English and Omi answers with real numbers, charts and sources.', 'assistant'),
+        ('🗺️', '#16A34A', 'Regional comparison', 'Put Lagos and Edo side by side to see which is warming or getting wetter faster.', 'compare')
+      ] %}
+      <a class="lv-feature" href="{{ url_for(link) }}">
+        <span class="lv-feature-icon" style="--c: {{ color }}" aria-hidden="true">{{ icon }}</span>
+        <strong>{{ title }}</strong>
+        <span>{{ text }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Role-adaptive -->
+  <section class="lv-section lv-tint" id="how">
+    <div class="lv-head">
+      <p class="kicker">Built for how you think</p>
+      <h2>Same NASA data. Explained your way.</h2>
+      <p>Tell Omi who you are when you sign up. Everyday users get visual answers; researchers get the full statistics. Switch any time.</p>
+    </div>
+    <div class="lv-modes">
+      {% for m, who, head, text, sample, col in [
+        ('Simple', 'Everyday users · farmers', 'Lagos is getting warmer', 'Big visuals, plain words, one clear takeaway and a safety tip.', '+0.8 °C since 1981 ✓ real trend', '#16A34A'),
+        ('Learn', 'Students · educators', 'Why the trend line matters', 'Charts with trend lines, short explanations, a glossary and quiz prompts.', 'Trend line rises ≈ 0.2 °C every 10 years', '#2563EB'),
+        ('Research', 'Researchers · policy', 'Full statistical output', "Sen's slope with 95% CI, modified Mann-Kendall Z/τ/p, methods, limits and CSV export.", 'Sen 0.173 °C/dec · CI [0.110, 0.224] · p < 0.001', '#7C3AED')
+      ] %}
+      <article class="lv-mode" style="--c: {{ col }}">
+        <span class="lv-mode-tag">{{ m }} mode</span>
+        <span class="muted">{{ who }}</span>
+        <h3>{{ head }}</h3>
+        <p>{{ text }}</p>
+        <code>{{ sample }}</code>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Real data -->
+  <section class="lv-section lv-data" id="data">
+    <div class="lv-data-text">
+      <p class="kicker">Real NASA records, not guesses</p>
+      <h2 data-lv-data-title>Edo is warming faster than Lagos</h2>
+      <p>Annual mean temperature from NASA POWER (MERRA-2), 1981–2025, tested with the autocorrelation-corrected Mann-Kendall test.</p>
+      <div class="lv-kpis">
+        <div style="--c: var(--lagos)"><span>Lagos</span><strong data-lv-kpi="lagos">+0.17 °C</strong><small>per decade</small></div>
+        <div style="--c: var(--edo)"><span>Edo</span><strong data-lv-kpi="edo">+0.25 °C</strong><small>per decade</small></div>
+      </div>
+      <a href="{{ url_for('compare') }}" class="v2-link">Open the regional comparison →</a>
+    </div>
+    <div class="lv-data-chart">
+      <div class="climate-legend"><span><i style="background: var(--lagos)"></i>Lagos</span><span><i style="background: var(--edo)"></i>Edo</span><span><i class="dash"></i>Trend (Sen's slope)</span></div>
+      <div data-lv-compare class="lv-compare"><div class="skeleton" style="height: 260px"></div></div>
+    </div>
+  </section>
+
+  <!-- Meet Omi -->
+  <section class="lv-section lv-tint" id="meet-omi">
+    <div class="lv-head">
+      <p class="kicker">Meet Omi</p>
+      <h2>A weather buddy with a mood for every sky</h2>
+      <p>Omi changes with the weather, so you can read the day at a glance.</p>
+    </div>
+    <div class="lv-moods">
+      {% for m in ['sunny', 'cloudy', 'rainy', 'stormy', 'harmattan'] %}{{ omi_mood(m, 'md') }}{% endfor %}
+    </div>
+  </section>
+
+  <!-- SDGs -->
+  <section class="lv-section" id="sdgs">
+    <div class="lv-head">
+      <p class="kicker">Impact</p>
+      <h2>Aligned with the UN Sustainable Development Goals</h2>
+    </div>
+    <div class="lv-sdgs">
+      {% for n, t, d, c in [('13', 'Climate Action', 'Makes local climate change visible and measurable.', '#3F7E44'), ('11', 'Sustainable Cities', 'Flood and heat alerts for safer Lagos streets.', '#FD9D24'), ('4', 'Quality Education', 'Learn mode and the Trend Detective game teach data skills.', '#C5192D'), ('2', 'Zero Hunger', 'Rainfall trends help farmers plan planting seasons.', '#DDA63A')] %}
+      <article class="lv-sdg"><span style="background: {{ c }}">SDG {{ n }}</span><strong>{{ t }}</strong><p>{{ d }}</p></article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="lv-section">
+    <div class="lv-band">
       <div>
-        <p class="kicker-text">NASA Space Apps Challenge · Earth System Trend Detective</p>
-        <h1 class="hero-title">See the patterns. Understand the change.</h1>
-        <p class="hero-subtitle">
-          Explore how temperature and rainfall have changed over time. Turn environmental time-series data into clear trends, comparisons and insights you can understand.
-        </p>
-        <div class="hero-actions">
-          <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
-            <span>Explore the Workspace</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </a>
-          <a href="#how-it-works" class="btn btn-secondary btn-lg">Discover How It Works</a>
-        </div>
-        <div class="meta-line">
-          <span>Temperature &amp; rainfall analysis</span>
-          <span class="meta-sep" aria-hidden="true">·</span>
-          <span>Lagos &amp; Edo study zones</span>
-          <span class="meta-sep" aria-hidden="true">·</span>
-          <span>CSV time-series diagnostics</span>
-        </div>
+        <h2>Ready to meet Omi?</h2>
+        <p>Free for students, researchers and everyone in Nigeria.</p>
+        <a href="{{ url_for('signup') }}" class="btn btn-lg lv-band-btn">Create free account</a>
       </div>
-
-      <!-- Environmental Illustration: Stylised Earth, Data Lines, Temperature & Rainfall Indicators -->
-      <div class="hero-visual-frame" role="img" aria-label="Stylised Earth system diagram showing West African latitude coordinates alongside temperature and rainfall trend trajectories">
-        <svg viewBox="0 0 540 390" width="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="earthGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#173B56"/>
-              <stop offset="100%" stop-color="#102A43"/>
-            </linearGradient>
-            <linearGradient id="tempLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#E8F3FA"/>
-              <stop offset="100%" stop-color="#F59E0B"/>
-            </linearGradient>
-            <linearGradient id="rainAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#168C83" stop-opacity="0.38"/>
-              <stop offset="100%" stop-color="#168C83" stop-opacity="0.02"/>
-            </linearGradient>
-          </defs>
-
-          <!-- Background Coordinate Grid -->
-          <g stroke="rgba(232,243,250,0.08)" stroke-width="1">
-            <line x1="24" y1="60" x2="516" y2="60"/>
-            <line x1="24" y1="125" x2="516" y2="125"/>
-            <line x1="24" y1="190" x2="516" y2="190"/>
-            <line x1="24" y1="255" x2="516" y2="255"/>
-            <line x1="24" y1="320" x2="516" y2="320"/>
-            <line x1="120" y1="24" x2="120" y2="355"/>
-            <line x1="240" y1="24" x2="240" y2="355"/>
-            <line x1="360" y1="24" x2="360" y2="355"/>
-            <line x1="480" y1="24" x2="480" y2="355"/>
-          </g>
-
-          <!-- Stylised Earth Globe (Left Focal Sphere) -->
-          <g transform="translate(152, 168)">
-            <circle cx="0" cy="0" r="106" fill="url(#earthGlow)" stroke="#244B6E" stroke-width="1.5"/>
-            <circle cx="0" cy="0" r="122" fill="none" stroke="rgba(22,140,131,0.3)" stroke-width="1" stroke-dasharray="4 5"/>
-
-            <!-- Latitude & Longitude Graticules -->
-            <ellipse cx="0" cy="0" rx="52" ry="106" fill="none" stroke="rgba(232,243,250,0.16)" stroke-width="1"/>
-            <ellipse cx="0" cy="0" rx="88" ry="106" fill="none" stroke="rgba(232,243,250,0.1)" stroke-width="1"/>
-            <line x1="-106" y1="0" x2="106" y2="0" stroke="rgba(232,243,250,0.16)" stroke-width="1"/>
-            <path d="M-92,-52 Q0,-34 92,-52" fill="none" stroke="rgba(232,243,250,0.14)" stroke-width="1"/>
-            <path d="M-92,52 Q0,34 92,52" fill="none" stroke="rgba(232,243,250,0.14)" stroke-width="1"/>
-
-            <!-- Stylised Continental Silhouettes (Africa / Equatorial Band) -->
-            <path d="M-24,-66 C-2,-72 28,-62 42,-42 C56,-22 52,2 40,22 C28,42 18,74 4,84 C-8,76 -12,48 -18,32 C-26,14 -48,10 -54,-12 C-60,-34 -44,-58 -24,-66 Z" fill="#1E4B6D" stroke="#2D6A96" stroke-width="1.2"/>
-
-            <!-- Study Region Markers: Lagos & Edo Band -->
-            <circle cx="-18" cy="-4" r="5" fill="#168C83" stroke="#DDF3EF" stroke-width="2"/>
-            <circle cx="-4" cy="-6" r="5" fill="#E8F3FA" stroke="#168C83" stroke-width="2"/>
-            <line x1="-18" y1="-4" x2="128" y2="-46" stroke="rgba(221,243,239,0.45)" stroke-width="1" stroke-dasharray="3 3"/>
-            <line x1="-4" y1="-6" x2="128" y2="48" stroke="rgba(232,243,250,0.45)" stroke-width="1" stroke-dasharray="3 3"/>
-          </g>
-
-          <!-- Temperature Indicator Card (Top Right) -->
-          <g transform="translate(290, 42)">
-            <rect x="0" y="0" width="224" height="124" rx="12" fill="#173B56" stroke="#2D5678" stroke-width="1"/>
-            <text x="16" y="26" fill="#9FB3C8" font-family="Manrope, sans-serif" font-size="11" font-weight="600">Temperature Trajectory (°C)</text>
-            <text x="16" y="48" fill="#FFFFFF" font-family="JetBrains Mono, monospace" font-size="15" font-weight="600">Surface Air Signal</text>
-            <path d="M16 96 C46 92, 68 80, 96 84 C124 88, 146 66, 174 62 C190 60, 200 54, 208 48" fill="none" stroke="url(#tempLineGrad)" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="96" cy="84" r="3" fill="#E8F3FA"/>
-            <circle cx="174" cy="62" r="3" fill="#F59E0B"/>
-            <circle cx="208" cy="48" r="3.5" fill="#F59E0B"/>
-            <text x="16" y="113" fill="#829AB1" font-family="JetBrains Mono, monospace" font-size="10">Time-series window · Trend line</text>
-          </g>
-
-          <!-- Rainfall Indicator Card (Bottom Right) -->
-          <g transform="translate(290, 184)">
-            <rect x="0" y="0" width="224" height="148" rx="12" fill="#173B56" stroke="#2D5678" stroke-width="1"/>
-            <text x="16" y="26" fill="#9FB3C8" font-family="Manrope, sans-serif" font-size="11" font-weight="600">Rainfall Pattern (mm)</text>
-            <text x="16" y="48" fill="#DDF3EF" font-family="JetBrains Mono, monospace" font-size="15" font-weight="600">Precipitation Index</text>
-
-            <!-- Precipitation Curve & Bars -->
-            <path d="M16 122 L16 104 C44 96, 66 78, 94 86 C122 94, 144 68, 172 74 C190 78, 200 92, 208 86 L208 122 Z" fill="url(#rainAreaGrad)"/>
-            <path d="M16 104 C44 96, 66 78, 94 86 C122 94, 144 68, 172 74 C190 78, 200 92, 208 86" fill="none" stroke="#2CB1A5" stroke-width="2.4" stroke-linecap="round"/>
-            <g fill="rgba(221,243,239,0.28)">
-              <rect x="26" y="108" width="8" height="14" rx="2"/>
-              <rect x="52" y="96" width="8" height="26" rx="2"/>
-              <rect x="78" y="88" width="8" height="34" rx="2"/>
-              <rect x="104" y="94" width="8" height="28" rx="2"/>
-              <rect x="130" y="82" width="8" height="40" rx="2"/>
-              <rect x="156" y="76" width="8" height="46" rx="2"/>
-              <rect x="182" y="88" width="8" height="34" rx="2"/>
-            </g>
-            <text x="16" y="138" fill="#829AB1" font-family="JetBrains Mono, monospace" font-size="10">Coastal vs. Forest Transition</text>
-          </g>
-
-          <!-- Coordinates Label Bottom Left -->
-          <text x="26" y="348" fill="#829AB1" font-family="JetBrains Mono, monospace" font-size="11">LAT 6.52°N · LON 3.38°E – 5.90°E · WEST AFRICA</text>
-        </svg>
-
-        <div class="hero-visual-caption">
-          <span>Earth System Telemetry View</span>
-          <span class="mono-value">Variables: Temperature (°C) · Rainfall (mm)</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- What Omi AI Does -->
-  <section id="about" class="landing-section">
-    <div class="landing-container">
-      <div class="about-grid">
-        <div>
-          <p class="kicker-text">What Omi AI does</p>
-          <h2 class="section-title">Bringing statistical clarity to environmental time-series records</h2>
-          <p class="section-lead">
-            Climate and weather spreadsheets often remain locked in raw CSV exports or complex scripts. Omi AI helps researchers, students, and regional planners inspect historical temperature and rainfall behaviour, run non-parametric trend tests, and interpret findings with an integrated research assistant.
-          </p>
-        </div>
-
-        <div class="about-principles">
-          <div class="principle-row">
-            <h3>Evidence before assumptions</h3>
-            <p>Every chart and metric in the workspace is generated exclusively from connected regional data or uploaded CSV observations—never synthetic placeholders.</p>
-          </div>
-          <div class="principle-row">
-            <h3>Transparent statistical diagnostics</h3>
-            <p>Review observation counts, missing-data quality checks, mean/minimum/maximum bounds, and statistical significance alongside visual trend lines.</p>
-          </div>
-          <div class="principle-row">
-            <h3>Built for Nigerian environmental research</h3>
-            <p>Pre-configured study profiles for coastal Lagos State and forest-transition Edo State support rapid regional investigation and comparison.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How It Works -->
-  <section id="how-it-works" class="landing-section landing-section-alt">
-    <div class="landing-container">
-      <div class="section-header">
-        <p class="kicker-text">How it works</p>
-        <h2 class="section-title">From raw observations to interpretable regional insight</h2>
-        <p class="section-lead">A disciplined four-step workflow designed for reproducible environmental exploration.</p>
-      </div>
-
-      <div class="steps-grid">
-        <article class="step-card">
-          <span class="step-index">01</span>
-          <h3>Select a region</h3>
-          <p>Choose Lagos State, Edo State, or specify your own geographic study area inside the workspace.</p>
-        </article>
-
-        <article class="step-card">
-          <span class="step-index">02</span>
-          <h3>Explore environmental data</h3>
-          <p>Connect to regional records or upload your own CSV time-series file with custom date and measurement columns.</p>
-        </article>
-
-        <article class="step-card">
-          <span class="step-index">03</span>
-          <h3>Analyse trends</h3>
-          <p>Run server-side cleaning, validation, summary statistics, and trend detection directly through the Flask analysis engine.</p>
-        </article>
-
-        <article class="step-card">
-          <span class="step-index">04</span>
-          <h3>Understand results</h3>
-          <p>Inspect interactive trend charts, data quality diagnostics, and ask the AI Research Assistant to explain statistical methods.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Core Features -->
-  <section id="features" class="landing-section">
-    <div class="landing-container">
-      <div class="section-header">
-        <p class="kicker-text">Core features</p>
-        <h2 class="section-title">Everything required to investigate climate change patterns</h2>
-        <p class="section-lead">Focused tools for environmental analysts, citizen scientists, and Earth observation teams.</p>
-      </div>
-
-      <div class="features-bento">
-        <article class="feature-card feature-span-3">
-          <div class="feature-icon-box" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="9" rx="1"/>
-              <rect x="14" y="3" width="7" height="5" rx="1"/>
-              <rect x="14" y="12" width="7" height="9" rx="1"/>
-              <rect x="3" y="16" width="7" height="5" rx="1"/>
-            </svg>
-          </div>
-          <h3>Environmental Dashboard</h3>
-          <p>Central workspace bringing together regional study profiles, temperature and rainfall trend panels, historical observations, and quick research actions.</p>
-        </article>
-
-        <article class="feature-card feature-span-3">
-          <div class="feature-icon-box" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <h3>AI Research Assistant</h3>
-          <p>Interactive assistant connected to the Flask AI service to clarify statistical tests like Mann-Kendall, seasonal variability, and regional contrast.</p>
-        </article>
-
-        <article class="feature-card feature-span-2">
-          <div class="feature-icon-box" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-          <h3>Statistical Trend Analysis</h3>
-          <p>Examine trend direction, minimum, mean, maximum, and significance metrics computed from valid time-series observations.</p>
-        </article>
-
-        <article class="feature-card feature-span-2">
-          <div class="feature-icon-box" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-          </div>
-          <h3>CSV Dataset Upload</h3>
-          <p>Client-side header detection and column suggestion with server-side validation, cleaning, and diagnostic charting.</p>
-        </article>
-
-        <article class="feature-card feature-span-2">
-          <div class="feature-icon-box" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="18" cy="5" r="3"/>
-              <circle cx="6" cy="12" r="3"/>
-              <circle cx="18" cy="19" r="3"/>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-            </svg>
-          </div>
-          <h3>Regional Comparison</h3>
-          <p>Contrast coastal urban dynamics in Lagos State with inland forest-transition conditions across Edo State.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Study Regions -->
-  <section id="regions" class="landing-section landing-section-alt">
-    <div class="landing-container">
-      <div class="section-header">
-        <p class="kicker-text">Study regions</p>
-        <h2 class="section-title">Focused environmental monitoring across contrasting Nigerian zones</h2>
-        <p class="section-lead">Compare how coastal urbanisation and inland forest transition ecosystems respond across multi-year climate records.</p>
-      </div>
-
-      <div class="regions-grid">
-        <article class="region-showcase-card">
-          <div>
-            <div class="meta-line" style="margin-bottom: 10px;">
-              <span>South-West Nigeria</span>
-              <span class="meta-sep" aria-hidden="true">·</span>
-              <span>Coastal urban environment</span>
-            </div>
-            <h3 style="font-size: 1.375rem; margin-bottom: 10px;">Lagos State</h3>
-            <p>Low-lying Atlantic coastal basin characterised by high population density, maritime humidity, urban heat island effects, and intense wet-season rainfall events.</p>
-          </div>
-
-          <div class="region-specs">
-            <div>
-              <div class="spec-label">Reference coordinates</div>
-              <div class="spec-value mono-value">6.5244° N, 3.3792° E</div>
-            </div>
-            <div>
-              <div class="spec-label">Primary focus</div>
-              <div class="spec-value">Coastal urban heat &amp; rainfall</div>
-            </div>
-          </div>
-
-          <div>
-            <a href="{{ url_for('dashboard') }}?region=lagos" class="btn btn-secondary">Inspect Lagos in Workspace</a>
-          </div>
-        </article>
-
-        <article class="region-showcase-card">
-          <div>
-            <div class="meta-line" style="margin-bottom: 10px;">
-              <span>South-South Nigeria</span>
-              <span class="meta-sep" aria-hidden="true">·</span>
-              <span>Inland and forest transition zone</span>
-            </div>
-            <h3 style="font-size: 1.375rem; margin-bottom: 10px;">Edo State</h3>
-            <p>Inland tropical rainforest-to-savanna transition corridor influenced by monsoon seasonality, vegetation cover changes, and regional temperature shifts.</p>
-          </div>
-
-          <div class="region-specs">
-            <div>
-              <div class="spec-label">Reference coordinates</div>
-              <div class="spec-value mono-value">6.5438° N, 5.8987° E</div>
-            </div>
-            <div>
-              <div class="spec-label">Primary focus</div>
-              <div class="spec-value">Forest transition hydrology</div>
-            </div>
-          </div>
-
-          <div>
-            <a href="{{ url_for('dashboard') }}?region=edo" class="btn btn-secondary">Inspect Edo in Workspace</a>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Closing Call-to-Action -->
-  <section class="landing-section">
-    <div class="landing-container">
-      <div class="cta-band">
-        <div>
-          <h2>Ready to inspect your environmental time-series data?</h2>
-          <p>Open the Omi AI workspace to explore Lagos and Edo study zones, upload CSV records for statistical analysis, or consult the AI Research Assistant.</p>
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 12px; flex-shrink: 0;">
-          <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Open Workspace</a>
-          <a href="{{ url_for('upload') }}" class="btn btn-secondary btn-lg">Analyse a Dataset</a>
-        </div>
-      </div>
+      <img src="{{ url_for('static', filename='img/omi/omi-wave.webp') }}" alt="" width="220" height="198">
     </div>
   </section>
 </main>
 
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div>
-      <a href="{{ url_for('landing') }}" class="brand-link" style="margin-bottom: 6px;">
-        <span class="brand-mark" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M3.6 9h16.8"/>
-            <path d="M3.6 15h16.8"/>
-            <path d="M12 3a13 13 0 0 1 0 18"/>
-          </svg>
-        </span>
-        <span>Omi AI</span>
-      </a>
-      <p style="font-size: 0.8125rem;">Earth System Trend Detective · NASA Space Apps Challenge</p>
-    </div>
-
-    <nav class="footer-links" aria-label="Footer navigation">
-      <a href="{{ url_for('dashboard') }}">Overview</a>
-      <a href="{{ url_for('upload') }}">Analyse a Dataset</a>
-      <a href="{{ url_for('assistant') }}">AI Assistant</a>
-      <a href="#how-it-works">How it works</a>
-      <a href="#about">About</a>
-    </nav>
-  </div>
+<footer class="lv-footer">
+  <a href="{{ url_for('landing') }}" class="lv-brand">{% include "_logo.html" %}<span>Omi AI</span></a>
+  <p>Data: NASA POWER · NASA GPM IMERG via GIBS · MET Norway · Built for NASA Space Apps 2026</p>
 </footer>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/omi-charts.js') }}"></script>
+<script>
+(function () {
+  'use strict';
+  var IMG = '/static/img/weather/';
+  function json(url, body) {
+    return fetch(url, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error); return d; }); });
+  }
+  json('/api/weather?region=lagos').then(function (w) {
+    document.querySelector('[data-lv-temp]').textContent = w.current.temperature + '°C';
+    document.querySelector('[data-lv-icon]').src = IMG + w.current.icon + '.svg';
+    document.querySelector('[data-lv-cond]').textContent = w.current.condition + (w.current.humidity != null ? ' · humidity ' + w.current.humidity + '%' : '');
+    document.querySelector('[data-lv-alert]').textContent = '☔ ' + w.alert.text;
+  }).catch(function () { document.querySelector('[data-lv-cond]').textContent = 'Live weather unavailable right now'; });
+
+  function pts(r) { return r.annual_series.map(function (a) { return { x: a.year, y: a.value }; }); }
+  function trend(r) { return r.trend.trend_line.map(function (a) { return { x: +String(a.date).slice(0, 4), y: a.value }; }); }
+  function dec(r) { var s = r.trend.sens_slope.slope_per_decade; return (s > 0 ? '+' : '') + s.toFixed(2) + ' °C'; }
+  Promise.all([json('/api/analyze', { region: 'lagos', variable: 'temperature', detail: 'simple' }), json('/api/analyze', { region: 'edo', variable: 'temperature', detail: 'simple' })])
+    .then(function (rs) {
+      var L = rs[0], E = rs[1];
+      document.querySelector('[data-lv-trend]').textContent = dec(L) + ' per decade';
+      window.OmiCharts.line(document.querySelector('[data-lv-chart]'), { minimal: true, height: 56, series: [{ points: pts(L), color: '#2563EB', width: 2 }, { points: trend(L), color: '#0B1F44', width: 1.6, dash: true }] });
+      document.querySelector('[data-lv-kpi="lagos"]').textContent = dec(L);
+      document.querySelector('[data-lv-kpi="edo"]').textContent = dec(E);
+      var faster = E.trend.sens_slope.slope_per_decade > L.trend.sens_slope.slope_per_decade ? 'Edo is warming faster than Lagos' : 'Lagos is warming faster than Edo';
+      document.querySelector('[data-lv-data-title]').textContent = faster;
+      window.OmiCharts.line(document.querySelector('[data-lv-compare]'), {
+        height: 280, yUnit: '°C', label: 'Annual mean temperature, Lagos and Edo',
+        series: [{ points: pts(L), color: '#0EA5A0', width: 2.2 }, { points: pts(E), color: '#F08C00', width: 2.2 }, { points: trend(L), color: '#0EA5A0', width: 2, dash: true }, { points: trend(E), color: '#F08C00', width: 2, dash: true }]
+      });
+    }).catch(function () { var c = document.querySelector('[data-lv-compare]'); if (c) c.innerHTML = '<p class="muted">NASA records could not be loaded right now.</p>'; });
+})();
+</script>
 {% endblock %}

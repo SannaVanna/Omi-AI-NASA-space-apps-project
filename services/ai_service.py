@@ -317,6 +317,11 @@ def answer_question(question, context=None, detail="detailed", history=None, voi
         )
         return _finish(response, voice)
 
+    live = _live_weather_answer(lowered)
+    if live:
+        response["answer"] = live
+        return _finish(response, voice)
+
     found = parse_message(question)
     start_only = found.pop("start_year_only", None)
 
@@ -419,6 +424,53 @@ def answer_question(question, context=None, detail="detailed", history=None, voi
     response["has_result"] = True
     response["params"] = params
     return _finish(response, voice)
+
+
+LIVE_WEATHER = re.compile(
+    r"(will it rain|is it (going to )?rain|rain (today|tonight|now|this (morning|afternoon|evening))|"
+    r"weather (today|now|like|right now|this)|umbrella|forecast|how hot|temperature (now|today|right now)|"
+    r"(today|tonight|now)'?s? weather|current weather|weather in)"
+)
+
+
+def _live_weather_answer(lowered):
+    """Questions about weather right now are answered from the live forecast."""
+    if not LIVE_WEATHER.search(lowered) or re.search(r"\b(19|20)\d{2}\b|trend|since|decade|changed", lowered):
+        return None
+    from services.alerts_service import alerts_for
+    from services.weather_service import WeatherUnavailable, get_weather
+
+    places = current_app.config.get("PLACES", {})
+    place_id = "lagos"
+    for pid, p in places.items():
+        names = {p["name"].lower(), pid.replace("-", " ")}
+        if pid == "edo":
+            names |= {"edo", "benin"}
+        if any(n in lowered for n in names):
+            place_id = pid
+            break
+    try:
+        w = get_weather(place_id)
+    except WeatherUnavailable:
+        return "I can't reach the live forecast right now. Please try again in a few minutes."
+    c = w["current"]
+    name = w["region"]["name"]
+    hours = ", ".join(f"{h['label']} {h['temperature']}°" for h in w.get("hourly", [])[:4])
+    parts = [f"Right now in {name} it's {c['temperature']}°C and {c['condition'].lower()}."]
+    if c.get("humidity") is not None:
+        parts.append(f"Humidity is {c['humidity']}% and wind {c.get('wind_kmh', '?')} km/h.")
+    rain = w.get("alert") or {}
+    if rain.get("minutes") is not None:
+        parts.append(f"{rain['text']}, so take an umbrella. ☔")
+    else:
+        parts.append("No rain is expected in the next 12 hours.")
+    if hours:
+        parts.append(f"Next hours: {hours}.")
+    alerts = alerts_for(w)
+    if alerts:
+        parts.append("Alert: " + "; ".join(a["title"] for a in alerts) + ".")
+    parts.append(f"(Live forecast from {w['source']['name']}.)")
+    return " ".join(parts)
 
 
 def _complete(params):

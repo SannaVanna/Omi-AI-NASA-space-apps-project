@@ -2,12 +2,44 @@
 {% set active_page = 'settings' %}
 
 {% block title %}Settings — Omi AI{% endblock %}
-{% block page_title %}Workspace Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
 
 {% block content %}
 <div id="settings-root" data-settings-endpoint="/api/settings" style="display: flex; flex-direction: column; gap: 24px;">
 
   <div id="settings-feedback-banner" class="notice is-hidden" role="status" aria-live="polite"></div>
+
+  <!-- Personalisation -->
+  <section class="card" aria-labelledby="personal-heading" data-personalise>
+    <div class="card-header">
+      <div>
+        <h2 id="personal-heading" style="font-size: 1.0625rem;">Personalisation</h2>
+        <p style="font-size: 0.8125rem;">Tell Omi who you are and how much detail you want. The same NASA data, explained your way.</p>
+      </div>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('places_page') }}">Saved places</a>
+    </div>
+    <div class="card-body" style="display: flex; flex-direction: column; gap: 18px;">
+      <fieldset class="role-grid role-grid--3">
+        <legend class="form-label">I am a…</legend>
+        {% set my_role = current_profile.role if current_profile and current_profile.role else '' %}
+        {% for rid, info in role_labels.items() %}
+        <label class="role-card">
+          <input type="radio" name="role" value="{{ rid }}" {% if rid == my_role %}checked{% endif %}>
+          <span class="role-icon" aria-hidden="true">{{ {'student': '🎓', 'researcher': '🔬', 'educator': '🧑‍🏫', 'policy': '🏛️', 'farmer': '🌾', 'everyday': '🙂'}[rid] }}</span>
+          <span class="role-text"><strong>{{ info[0] }}</strong><span>{{ info[1] }}</span></span>
+          <span class="role-check" aria-hidden="true"></span>
+        </label>
+        {% endfor %}
+      </fieldset>
+      <fieldset class="mode-cards">
+        <legend class="form-label">Insight mode</legend>
+        {% for m, d in [('simple', 'Big visuals and one clear takeaway'), ('learn', 'Charts plus short explanations and a glossary'), ('research', "Sen's slope, 95% CI, Mann-Kendall Z/τ/p, methods, CSV export")] %}
+        <label class="mode-card"><input type="radio" name="insight_mode" value="{{ m }}" {% if insight_mode == m %}checked{% endif %}><strong>{{ m|capitalize }}</strong><span>{{ d }}</span></label>
+        {% endfor %}
+      </fieldset>
+      <p class="muted" style="font-size: .8rem; margin: 0;" data-personal-status>{% if not signed_in %}You're browsing as a guest. <a href="{{ url_for('signup') }}">Create a free account</a> to save your role.{% else %}Changes save automatically.{% endif %}</p>
+    </div>
+  </section>
 
   <!-- Appearance Preference -->
   <section class="card" aria-labelledby="appearance-heading">
@@ -149,3 +181,31 @@
   </form>
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var box = document.querySelector('[data-personalise]');
+  if (!box) return;
+  var status = box.querySelector('[data-personal-status]');
+  box.querySelectorAll('input[name="insight_mode"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      window.OmiV2.applyMode(r.value);
+      fetch('/api/profile/mode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: r.value }) })
+        .then(function () { if (status) status.textContent = 'Insight mode saved: ' + r.value + '.'; });
+    });
+  });
+  document.addEventListener('omi:mode', function (e) { var r = box.querySelector('input[name="insight_mode"][value="' + e.detail + '"]'); if (r) r.checked = true; });
+  box.querySelectorAll('input[name="role"]').forEach(function (r) {
+    r.addEventListener('change', function () {
+      fetch('/api/profile').then(function (x) { return x.json(); }).then(function (d) {
+        var p = d.profile || {}; p.role = r.value;
+        return fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+      }).then(function (x) { return x.json(); }).then(function (d) {
+        try { localStorage.setItem('omi_profile', JSON.stringify(d.profile)); } catch (e) {}
+        if (status) status.textContent = 'Role saved.';
+      }).catch(function () { if (status) status.textContent = 'Could not save your role. Please try again.'; });
+    });
+  });
+})();
+</script>{% endblock %}

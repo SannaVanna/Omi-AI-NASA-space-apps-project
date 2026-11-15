@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Log in — Omi AI{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block shell %}
+<div class="auth-shell">
+  <aside class="auth-brand">
+    <a href="{{ url_for('landing') }}" class="auth-logo">{% include "_logo.html" %}<span>Omi AI</span></a>
+    <p class="auth-quote">Welcome back! Omi kept an eye on the sky while you were away.</p>
+    <img class="auth-omi" src="{{ url_for('static', filename='img/omi/omi-front.webp') }}" alt="Omi" width="360" height="353">
+  </aside>
+
+  <main class="auth-main">
+    <div class="auth-form">
+      <a href="{{ url_for('landing') }}" class="auth-back">← Back</a>
+      <h1>Welcome back</h1>
+      <p class="muted">Log in to get your weather and climate insights.</p>
+
+      <div class="auth-saved" data-saved hidden>
+        <p class="form-label">Saved on this device</p>
+        <button type="button" class="auth-saved-btn" data-continue>
+          <img src="{{ url_for('static', filename=avatar_image) }}" alt="" width="40" height="40">
+          <span><strong data-saved-name></strong><span data-saved-meta></span></span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <div class="auth-or"><span>or use another profile</span></div>
+      </div>
+
+      <form id="login-form" novalidate>
+        <label class="form-field">
+          <span class="form-label">Full name</span>
+          <input class="form-input" id="li-name" type="text" autocomplete="name" maxlength="80" placeholder="Ada Okafor" required>
+        </label>
+        <label class="form-field">
+          <span class="form-label">Email</span>
+          <input class="form-input" id="li-email" type="email" autocomplete="email" maxlength="120" placeholder="you@example.com" required>
+        </label>
+        <label class="form-field">
+          <span class="form-label">I am a…</span>
+          <select class="form-select" id="li-role">
+            {% for rid, info in role_labels.items() %}<option value="{{ rid }}">{{ info[0] }}</option>{% endfor %}
+          </select>
+        </label>
+        <p class="auth-note">🔒 Omi AI has no passwords yet. Your profile is stored in this browser only, never on a server database.</p>
+        <p class="auth-error" data-error role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-lg auth-cta">Log in</button>
+      </form>
+      <p class="auth-switch">New to Omi? <a href="{{ url_for('signup') }}">Create a free account</a></p>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

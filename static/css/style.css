@@ -5,76 +5,76 @@
 
 :root {
   /* Core Brand & Palette */
-  --navy-900: #102A43;
-  --navy-800: #173B56;
-  --navy-700: #243B53;
-  --teal-600: #10766F;
-  --teal-500: #168C83;
-  --teal-400: #2CB1A5;
-  --soft-teal: #DDF3EF;
-  --light-blue: #E8F3FA;
-  --off-white: #F7FAFC;
+  --navy-900: #0B1F44;
+  --navy-800: #14306A;
+  --navy-700: #1E3A8A;
+  --teal-600: #1D4ED8;
+  --teal-500: #2563EB;
+  --teal-400: #60A5FA;
+  --soft-teal: #E6EFFE;
+  --light-blue: #EEF5FF;
+  --off-white: #F5F8FE;
   --white: #FFFFFF;
 
   /* Slate Neutrals */
-  --slate-900: #102A43;
-  --slate-700: #334E68;
-  --slate-600: #486581;
-  --slate-500: #627D98;
-  --slate-400: #829AB1;
-  --slate-300: #BCCCDC;
-  --slate-200: #DCE5EE;
-  --slate-100: #F0F4F8;
+  --slate-900: #0B1F44;
+  --slate-700: #2A3F66;
+  --slate-600: #41557A;
+  --slate-500: #6B7FA3;
+  --slate-400: #8EA2C4;
+  --slate-300: #C9D6EA;
+  --slate-200: #E1E9F5;
+  --slate-100: #EEF3FB;
 
   /* Semantic Surfaces (Light Mode) */
-  --bg-canvas: #F7FAFC;
+  --bg-canvas: #F4F8FF;
   --bg-surface: #FFFFFF;
-  --bg-subtle: #F0F4F8;
-  --bg-accent-tint: #E8F3FA;
-  --bg-teal-tint: #DDF3EF;
+  --bg-subtle: #EEF3FB;
+  --bg-accent-tint: #EAF2FF;
+  --bg-teal-tint: #E6EFFE;
   --bg-hero-band: #FFFFFF;
 
-  --text-primary: #102A43;
-  --text-secondary: #486581;
-  --text-muted: #627D98;
+  --text-primary: #0B1F44;
+  --text-secondary: #41557A;
+  --text-muted: #6B7FA3;
   --text-on-dark: #FFFFFF;
   --text-on-teal: #FFFFFF;
 
-  --border-subtle: #DCE5EE;
-  --border-strong: #BCCCDC;
+  --border-subtle: #E1E9F5;
+  --border-strong: #C9D6EA;
 
-  --accent-primary: #168C83;
-  --accent-hover: #10766F;
-  --accent-navy: #102A43;
-  --accent-navy-hover: #173B56;
+  --accent-primary: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-navy: #0B1F44;
+  --accent-navy-hover: #14306A;
 
   /* State Tokens (Paired with Text/Icon Labels) */
-  --state-success-bg: #DDF3EF;
-  --state-success-text: #0F5E58;
-  --state-success-border: #A8DFD6;
+  --state-success-bg: #DCFCE7;
+  --state-success-text: #15803D;
+  --state-success-border: #BBF7D0;
   --state-warning-bg: #FEF3C7;
   --state-warning-text: #92400E;
   --state-warning-border: #FDE68A;
   --state-error-bg: #FEE2E2;
   --state-error-text: #991B1B;
   --state-error-border: #FECACA;
-  --state-info-bg: #E8F3FA;
-  --state-info-text: #173B56;
-  --state-info-border: #C5DFF0;
+  --state-info-bg: #EAF2FF;
+  --state-info-text: #1E3A8A;
+  --state-info-border: #C7DBFE;
 
   /* Elevation & Geometry */
-  --shadow-sm: 0 1px 2px rgba(16, 42, 67, 0.05);
-  --shadow-card: 0 4px 16px -2px rgba(16, 42, 67, 0.06), 0 1px 3px rgba(16, 42, 67, 0.04);
-  --shadow-elevated: 0 12px 32px -4px rgba(16, 42, 67, 0.1), 0 2px 6px rgba(16, 42, 67, 0.05);
+  --shadow-sm: 0 1px 2px rgba(11, 31, 68, 0.05), 0 1px 3px rgba(11, 31, 68, 0.04);
+  --shadow-card: 0 6px 20px -4px rgba(37, 99, 235, 0.10), 0 2px 6px rgba(11, 31, 68, 0.05);
+  --shadow-elevated: 0 18px 40px -8px rgba(37, 99, 235, 0.18), 0 4px 10px rgba(11, 31, 68, 0.06);
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
 
   /* Typography */
-  --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Layout Dimensions */
@@ -89,30 +89,30 @@
 /* Dark Theme Tokens */
 html[data-theme="dark"],
 html.dark {
-  --bg-canvas: #0A1624;
-  --bg-surface: #102A43;
-  --bg-subtle: #173B56;
-  --bg-accent-tint: #15344E;
-  --bg-teal-tint: rgba(22, 140, 131, 0.18);
-  --bg-hero-band: #0D2034;
+  --bg-canvas: #081226;
+  --bg-surface: #0F1D38;
+  --bg-subtle: #17284A;
+  --bg-accent-tint: #152A52;
+  --bg-teal-tint: rgba(37, 99, 235, 0.20);
+  --bg-hero-band: #0C1A33;
 
-  --text-primary: #F0F4F8;
-  --text-secondary: #BCCCDC;
-  --text-muted: #9FB3C8;
+  --text-primary: #EEF3FB;
+  --text-secondary: #B6C5E0;
+  --text-muted: #8EA2C4;
   --text-on-dark: #FFFFFF;
   --text-on-teal: #FFFFFF;
 
-  --border-subtle: #243B53;
-  --border-strong: #334E68;
+  --border-subtle: #1E3157;
+  --border-strong: #2A4170;
 
-  --accent-primary: #20A398;
-  --accent-hover: #168C83;
-  --accent-navy: #E8F3FA;
+  --accent-primary: #3B82F6;
+  --accent-hover: #2563EB;
+  --accent-navy: #EAF2FF;
   --accent-navy-hover: #FFFFFF;
 
-  --state-success-bg: rgba(22, 140, 131, 0.18);
-  --state-success-text: #7BE0D6;
-  --state-success-border: rgba(44, 177, 165, 0.35);
+  --state-success-bg: rgba(22, 163, 74, 0.18);
+  --state-success-text: #86EFAC;
+  --state-success-border: rgba(34,197,94,.35);
   --state-warning-bg: rgba(217, 119, 6, 0.18);
   --state-warning-text: #FCD34D;
   --state-warning-border: rgba(245, 158, 11, 0.35);
@@ -2755,7 +2755,7 @@ html[data-theme="dark"] .kpi-icon-down {
 
 .map-field input[type="range"] {
   width: 120px;
-  accent-color: #168C83;
+  accent-color: #2563EB;
 }
 
 .map-warn {

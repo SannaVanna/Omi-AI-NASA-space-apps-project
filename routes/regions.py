@@ -2,7 +2,8 @@ from flask import Blueprint, current_app, jsonify, request
 
 from services.analysis_service import run_comparison, run_investigation
 from services.nasa_service import NasaDataError, available_sources
-from services.weather_service import WeatherUnavailable, get_weather
+from services.alerts_service import collect_alerts, mood_for, places_list, route_weather
+from services.weather_service import WeatherUnavailable, get_weather, get_weather_point
 
 regions_bp = Blueprint("regions", __name__)
 
@@ -130,10 +131,40 @@ def compare():
 
 @regions_bp.route("/weather", methods=["GET"])
 def weather():
-    """Live weather for the dashboard card (MET Norway, fallback Open-Meteo)."""
+    """Live weather (MET Norway, fallback Open-Meteo) for a place or a lat/lon point."""
     try:
-        return jsonify(get_weather(request.args.get("region", "lagos")))
+        args = request.args
+        if args.get("lat") is not None and args.get("lon") is not None:
+            data = get_weather_point(args["lat"], args["lon"], (args.get("name") or "Selected point")[:60])
+        else:
+            data = get_weather(args.get("region") or args.get("place") or "lagos")
+        return jsonify(dict(data, mood=mood_for(data.get("current"), data.get("outlook"))))
     except ValueError as error:
         return _error(error)
     except WeatherUnavailable as error:
         return _error(error, 503)
+
+
+@regions_bp.route("/places", methods=["GET"])
+def places():
+    return jsonify(places_list())
+
+
+@regions_bp.route("/alerts", methods=["GET"])
+def alerts():
+    """Alerts derived from live forecasts for the requested places."""
+    raw = request.args.get("places") or "lagos,edo"
+    ids = [p.strip() for p in raw.split(",") if p.strip()][:12]
+    try:
+        return jsonify(collect_alerts(ids))
+    except ValueError as error:
+        return _error(error)
+
+
+@regions_bp.route("/route", methods=["GET"])
+def route():
+    """Weather along a trip between two places."""
+    try:
+        return jsonify(route_weather(request.args.get("from", "lagos"), request.args.get("to", "abuja")))
+    except ValueError as error:
+        return _error(error)

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set active_page = 'map' %}
+{% block title %}Map & Radar — Omi AI{% endblock %}
+{% block page_title %}Map & Radar{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">{% endblock %}
+
+{% block content %}
+<div class="v2-page">
+  <div class="v2-head">
+    <div>
+      <h1>Map &amp; Radar</h1>
+      <p>Live rain from NASA's GPM IMERG satellites, climate layers from MERRA-2, and live weather for Nigerian cities.</p>
+    </div>
+  </div>
+
+  <section class="radar-wrap" data-radar-page>
+    <div id="radar-map" class="radar-map" role="application" aria-label="Interactive map of Nigeria with rain radar and city weather"></div>
+
+    <div class="radar-panel radar-layers">
+      <h2>Layers</h2>
+      <label class="layer-row"><span><strong>Rain radar</strong><small>NASA GPM IMERG · 30 min</small></span><input type="checkbox" class="switch" data-layer="radar" checked></label>
+      <label class="layer-row"><span><strong>Temperature</strong><small>MERRA-2 monthly mean</small></span><input type="checkbox" class="switch" data-layer="temp"></label>
+      <label class="layer-row"><span><strong>Satellite</strong><small>Esri World Imagery</small></span><input type="checkbox" class="switch" data-layer="sat"></label>
+      <label class="layer-row"><span><strong>State boundaries</strong><small>Lagos &amp; Edo highlighted</small></span><input type="checkbox" class="switch" data-layer="states" checked></label>
+    </div>
+
+    <div class="radar-panel radar-time">
+      <div class="radar-legend" aria-hidden="true"></div>
+      <div class="radar-legend-labels"><span>Light</span><span>Moderate</span><span>Heavy</span><span>Extreme</span></div>
+      <div class="radar-player">
+        <button type="button" class="radar-play" data-radar-play aria-label="Play the last 3 hours of rain">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 4 13 8-13 8z"/></svg>
+        </button>
+        <input type="range" min="0" max="6" value="6" step="1" data-radar-slider aria-label="Radar time">
+        <span class="radar-stamp" data-radar-stamp>—</span>
+      </div>
+      <p class="map-note muted">IMERG Early Run arrives about 4–6 hours after observation, so the newest frame is the latest NASA has published.</p>
+    </div>
+
+    <aside class="radar-panel radar-detail" data-radar-detail hidden aria-live="polite"></aside>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='js/omi-charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages-v2.js') }}"></script>
+{% endblock %}

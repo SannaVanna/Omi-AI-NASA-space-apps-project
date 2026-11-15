@@ -6,7 +6,7 @@ import pytest
 @pytest.mark.parametrize("path", ["/compare", "/challenge"])
 def test_new_pages_render(client, path):
     html = client.get(path).data.decode()
-    assert "Regional Comparison" in html and "Trend Detective Challenge" in html  # sidebar links
+    assert "Compare Regions" in html and "Trend Challenge" in html  # sidebar links
 
 
 def test_mascot_and_avatar_assets(client):

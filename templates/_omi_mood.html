@@ -1,0 +1,9 @@
+{% macro omi_mood(mood='sunny', size='md', label=True, id='') -%}
+{% set img = {'stormy': 'omi-stormy', 'harmattan': 'omi-harmattan'}.get(mood, 'omi-wave') %}
+<figure class="omi-mood omi-mood--{{ mood }} omi-mood--{{ size }}" {% if id %}id="{{ id }}"{% endif %} data-omi-mood="{{ mood }}">
+  <span class="omi-mood-sky" aria-hidden="true"></span>
+  <img class="omi-mood-omi" src="{{ url_for('static', filename='img/omi/' ~ img ~ '.webp') }}" alt="Omi, {{ mood }} mood" data-omi-mood-img>
+  <span class="omi-mood-fx" aria-hidden="true"></span>
+  {% if label %}<figcaption data-omi-mood-label>{{ mood|capitalize }}</figcaption>{% endif %}
+</figure>
+{%- endmacro %}

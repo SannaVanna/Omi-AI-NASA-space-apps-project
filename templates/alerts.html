@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set active_page = 'alerts' %}
+{% block title %}Alerts — Omi AI{% endblock %}
+{% block page_title %}Alerts{% endblock %}
+
+{% block content %}
+<div class="v2-page" data-alerts-page>
+  <div class="v2-head">
+    <div>
+      <h1>Alerts</h1>
+      <p>Warnings for your saved places, worked out from the live forecast and ranked by severity.</p>
+    </div>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('places_page') }}">Manage places</a>
+  </div>
+
+  <div class="alerts-layout">
+    <section class="v2-card">
+      <div class="chips" role="group" aria-label="Filter alerts" data-alert-filter>
+        <button type="button" class="chip is-active" data-sev="all" aria-pressed="true">All <span data-count="all"></span></button>
+        <button type="button" class="chip" data-sev="severe" aria-pressed="false">Severe <span data-count="severe"></span></button>
+        <button type="button" class="chip" data-sev="warning" aria-pressed="false">Warning <span data-count="warning"></span></button>
+        <button type="button" class="chip" data-sev="info" aria-pressed="false">Info <span data-count="info"></span></button>
+      </div>
+      <div class="alerts-list" data-alert-list aria-live="polite">
+        <div class="skeleton" style="height: 64px"></div><div class="skeleton" style="height: 64px"></div>
+      </div>
+      <p class="map-note muted" data-alert-meta></p>
+    </section>
+
+    <aside class="alerts-side">
+      <section class="v2-card">
+        <div class="v2-card-head"><h2>Your places now</h2></div>
+        <div class="alert-places" data-alert-places></div>
+      </section>
+      <section class="v2-card">
+        <div class="v2-card-head"><h2>How Omi decides</h2></div>
+        <ul class="rules">
+          <li><span class="pill pill--danger">Severe</span> 5 mm of rain or more in one hour</li>
+          <li><span class="pill pill--warning">Warning</span> 1 mm+ rain per hour, thunder, or heat of 34 °C+</li>
+          <li><span class="pill pill--brand">Info</span> light showers, or harmattan dryness (Nov–Feb, humidity ≤ 40%)</li>
+        </ul>
+        <p class="map-note muted">Source: MET Norway Locationforecast (Open-Meteo as backup). Always follow official NiMet and NEMA warnings.</p>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages-v2.js') }}"></script>{% endblock %}

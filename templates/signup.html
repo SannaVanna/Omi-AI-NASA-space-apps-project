@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Create your account — Omi AI{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block shell %}
+<div class="auth-shell">
+  <aside class="auth-brand">
+    <a href="{{ url_for('landing') }}" class="auth-logo">{% include "_logo.html" %}<span>Omi AI</span></a>
+    <p class="auth-quote">“Omi explains the same NASA data differently for a farmer, a student and a scientist.”</p>
+    <img class="auth-omi" src="{{ url_for('static', filename='img/omi/omi-wave.webp') }}" alt="Omi waving hello" width="380" height="342">
+  </aside>
+
+  <main class="auth-main">
+    <form class="auth-form" id="signup-form" novalidate>
+      <!-- Step 1 -->
+      <section class="auth-step" data-step="1">
+        <a href="{{ url_for('landing') }}" class="auth-back">← Back</a>
+        <p class="kicker">Step 1 of 2</p>
+        <h1>Create your account</h1>
+        <p class="muted">Free for students, researchers and everyone in Nigeria.</p>
+        <div class="auth-progress"><span style="width: 50%"></span></div>
+
+        <label class="form-field">
+          <span class="form-label">Full name</span>
+          <input class="form-input" id="su-name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Ada Okafor" required>
+        </label>
+        <label class="form-field">
+          <span class="form-label">Email</span>
+          <input class="form-input" id="su-email" name="email" type="email" autocomplete="email" maxlength="120" placeholder="ada@example.com" required>
+        </label>
+        <label class="form-field">
+          <span class="form-label">School, organisation or community <span class="muted">(optional)</span></span>
+          <input class="form-input" id="su-aff" name="affiliation" type="text" maxlength="120" placeholder="University of Lagos">
+        </label>
+        <p class="auth-note">🔒 No password needed yet: your profile is kept in this browser only.</p>
+        <p class="auth-error" data-error role="alert"></p>
+        <button type="button" class="btn btn-primary btn-lg auth-cta" data-next>Continue</button>
+        <p class="auth-switch">Already joined? <a href="{{ url_for('login') }}">Log in</a></p>
+      </section>
+
+      <!-- Step 2 -->
+      <section class="auth-step" data-step="2" hidden>
+        <button type="button" class="auth-back" data-prev>← Step 2 of 2</button>
+        <h1>Tell Omi about you</h1>
+        <p class="muted">We use this to choose how much detail to show. You can change it later in Settings.</p>
+        <div class="auth-progress"><span style="width: 100%"></span></div>
+
+        <fieldset class="role-grid">
+          <legend class="form-label">I am a…</legend>
+          {% for rid, info in role_labels.items() %}
+          <label class="role-card">
+            <input type="radio" name="role" value="{{ rid }}" {% if rid == 'student' %}checked{% endif %} data-default-mode="{{ role_modes[rid] }}">
+            <span class="role-icon" aria-hidden="true">{{ {'student': '🎓', 'researcher': '🔬', 'educator': '🧑‍🏫', 'policy': '🏛️', 'farmer': '🌾', 'everyday': '🙂'}[rid] }}</span>
+            <span class="role-text"><strong>{{ info[0] }}</strong><span>{{ info[1] }}</span></span>
+            <span class="role-check" aria-hidden="true"></span>
+          </label>
+          {% endfor %}
+        </fieldset>
+
+        <fieldset class="mode-pick">
+          <legend class="form-label">How should Omi explain results?</legend>
+          <div class="chips">
+            {% for m in ['simple', 'learn', 'research'] %}
+            <label class="chip-radio"><input type="radio" name="mode" value="{{ m }}" {% if m == 'learn' %}checked{% endif %}><span>{{ m|capitalize }}<em data-recommended="{{ m }}" hidden> · recommended</em></span></label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <div class="omi-says" data-mode-explain>
+          <img src="{{ url_for('static', filename='img/omi/omi-front.webp') }}" alt="">
+          <span data-mode-text></span>
+        </div>
+        <p class="auth-error" data-error role="alert"></p>
+        <button type="submit" class="btn btn-primary btn-lg auth-cta">Create account</button>
+      </section>
+    </form>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

@@ -2,7 +2,7 @@
 {% set active_page = 'dashboard' %}
 
 {% block title %}Overview — Omi AI{% endblock %}
-{% block page_title %}Environmental Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
@@ -17,31 +17,27 @@
      data-compare-endpoint="/api/compare"
      data-regions-endpoint="/api/regions">
 
-  <!-- Welcome hero -->
-  <section class="welcome-hero" aria-labelledby="welcome-heading">
-    <div class="welcome-hero-text">
-      <p class="kicker-text">Earth System Trend Detective</p>
-      <h1 id="welcome-heading">Welcome to Omi AI <span aria-hidden="true">👋</span></h1>
-      <p class="welcome-banner-sub">Explore environmental changes and discover what the data reveals.</p>
-      <p class="welcome-banner-note">
-        Pick Lagos or Edo on the map, choose temperature or rainfall, and Omi analyses real NASA records (1981 onwards), detects the trend, compares regions and explains the result.
+  {% from "_omi_mood.html" import omi_mood %}
+  {% set first_name = (current_profile.name.split()[0] if current_profile and current_profile.name else '') %}
+  <!-- Greeting -->
+  <section class="dash-head">
+    <div>
+      <h1><span data-greeting-time>Hello</span>{{ ', ' ~ first_name if first_name else '' }} <span aria-hidden="true">👋</span></h1>
+      <p>
+        <span class="only-simple">Here's what the sky and the climate are doing today.</span>
+        <span class="only-learn">Live weather plus what 45 years of NASA records say about your region.</span>
+        <span class="only-research">Live conditions and trend statistics from NASA POWER (MERRA-2), 1981–2025.</span>
       </p>
-      <div class="welcome-banner-actions">
-        <button type="button" id="explore-trends-btn" class="btn btn-primary">Explore the map</button>
-        <a href="{{ url_for('assistant') }}" class="btn btn-secondary">Ask Omi AI</a>
-        <a href="{{ url_for('upload') }}" class="btn btn-ghost">Upload a dataset</a>
-      </div>
     </div>
-    <div class="weather-hero" id="weather-hero" data-endpoint="/api/weather" data-img-base="{{ url_for('static', filename='img/weather/') }}">
-      {% set first_name = (current_profile.name.split()[0] if current_profile and current_profile.name else '') %}
-      <div class="omi-greet">
-        <img class="omi-greet-mascot" src="{{ url_for('static', filename=mascot_image) }}" alt="Omi, the Omi AI mascot">
-        <div class="speech-bubble">
-          <strong>Hi{{ ' ' ~ first_name if first_name else ' there' }}!</strong>
-          <span id="wx-greeting">Here's your weather update.</span>
-        </div>
-      </div>
+    <div class="dash-head-actions">
+      <button type="button" id="explore-trends-btn" class="btn btn-secondary btn-sm">Explore the map</button>
+      <a href="{{ url_for('assistant') }}" class="btn btn-primary btn-sm">Ask Omi</a>
+    </div>
+  </section>
 
+  <div class="dash-grid" data-dash>
+    <!-- Live weather hero (weather.js) -->
+    <section class="weather-hero dash-weather" id="weather-hero" data-endpoint="/api/weather" data-img-base="{{ url_for('static', filename='img/weather/') }}" aria-label="Live weather">
       <div class="weather-card" aria-live="polite">
         <div class="wx-head">
           <div class="wx-place">
@@ -54,7 +50,6 @@
           </div>
           <img class="wx-icon" id="wx-icon" src="{{ url_for('static', filename='img/weather/partly-day.svg') }}" alt="" width="120" height="135">
         </div>
-
         <div class="wx-metrics">
           <span class="wx-metric">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7C9 7 6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-3-7-6-11.3z" fill="currentColor"/></svg>
@@ -65,19 +60,63 @@
             Wind <strong id="wx-wind">--</strong>
           </span>
         </div>
-
         <div class="wx-alert" id="wx-alert">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7C9 7 6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-3-7-6-11.3z" fill="currentColor"/></svg>
           <span id="wx-alert-text">Checking for rain…</span>
         </div>
-
-        <div class="wx-hours" id="wx-hours" aria-label="Hourly forecast"></div>
-
         <div class="wx-source" id="wx-source">Live forecast</div>
       </div>
-    </div>
-  </section>
+    </section>
 
+    <!-- Next hours -->
+    <section class="v2-card dash-hours" aria-labelledby="hours-h">
+      <div class="v2-card-head"><h2 id="hours-h">Next hours</h2><a href="{{ url_for('route_page') }}">Planning a trip? →</a></div>
+      <div class="wx-hours" id="wx-hours" aria-label="Hourly forecast"></div>
+      <div class="omi-says">
+        <img src="{{ url_for('static', filename='img/omi/omi-front.webp') }}" alt="">
+        <span id="wx-greeting">Here's your weather update.</span>
+      </div>
+    </section>
+
+    <!-- Climate story: changes with insight mode -->
+    <section class="v2-card dash-climate" aria-labelledby="climate-h" data-climate>
+      <div class="v2-card-head">
+        <h2 id="climate-h"><span class="only-simple">Your climate, explained</span><span class="only-learn">What NASA records show</span><span class="only-research">Trend analysis</span> · <span data-climate-region>Lagos</span></h2>
+        <div class="chips" role="group" aria-label="Variable">
+          <button type="button" class="chip is-active" data-climate-var="temperature" aria-pressed="true">Temperature</button>
+          <button type="button" class="chip" data-climate-var="rainfall" aria-pressed="false">Rainfall</button>
+        </div>
+      </div>
+      <div class="climate-body" data-climate-body>
+        <div class="skeleton" style="height: 220px;"></div>
+      </div>
+    </section>
+
+    <!-- Rain radar -->
+    <section class="v2-card dash-radar" aria-labelledby="radar-h">
+      <div class="v2-card-head"><h2 id="radar-h">Rain radar</h2><a href="{{ url_for('map_radar') }}">Open →</a></div>
+      <div class="mini-radar" id="mini-radar" role="img" aria-label="NASA GPM IMERG rain map over Nigeria"></div>
+      <p class="map-note muted" data-radar-time>NASA GPM IMERG precipitation</p>
+    </section>
+
+    <!-- Omi's mood + alerts -->
+    <section class="v2-card dash-mood" aria-labelledby="mood-h">
+      <h2 id="mood-h" class="dash-mood-title">Omi says</h2>
+      {{ omi_mood('sunny', 'lg', True, 'dash-omi-mood') }}
+      <p class="dash-mood-text" data-mood-text>Checking the sky…</p>
+      <a href="{{ url_for('alerts_page') }}" class="pill" data-dash-alerts>Alerts loading…</a>
+    </section>
+  </div>
+
+  <div class="dash-divider">
+    <div>
+      <h2>Explore the data yourself</h2>
+      <p class="muted">Pick a region on the map, choose a variable and period, and Omi runs the full analysis.</p>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm only-simple" data-reveal-explore aria-expanded="false" aria-controls="explore-area">Show the explorer</button>
+  </div>
+
+  <div id="explore-area" class="explore-area">
   <div id="dashboard-status-banner" class="notice notice-info is-hidden" role="status" aria-live="polite"></div>
 
   <!-- Explore: map + form -->
@@ -292,6 +331,8 @@
     </div>
   </section>
 
+  </div>
+
   <!-- Quick Actions -->
   <section aria-labelledby="quick-actions-heading">
     <div class="section-row-head">
@@ -342,4 +383,6 @@
 <script src="{{ url_for('static', filename='js/region_map.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 <script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+<script src="{{ url_for('static', filename='js/omi-charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dash-v2.js') }}"></script>
 {% endblock %}

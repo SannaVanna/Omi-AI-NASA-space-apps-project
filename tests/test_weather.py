@@ -110,9 +110,9 @@ def test_unavailable_and_bad_region(client, monkeypatch):
 
 def test_dashboard_has_weather_card(client):
     html = client.get("/dashboard").data.decode()
-    assert 'id="weather-hero"' in html and "js/weather.js" in html and "Hi there!" in html
+    assert 'id="weather-hero"' in html and "js/weather.js" in html and 'id="wx-greeting"' in html
     client.post("/api/profile", json={"name": "Bolaji Adigun"})
-    assert "Hi Bolaji!" in client.get("/dashboard").data.decode()
+    assert ", Bolaji" in client.get("/dashboard").data.decode()
     for icon in ["clear-day", "clear-night", "partly-day", "partly-night", "cloudy", "fog", "drizzle", "rain",
                  "showers-day", "showers-night", "thunder"]:
         assert client.get(f"/static/img/weather/{icon}.svg").status_code == 200

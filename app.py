@@ -32,11 +32,30 @@ def create_app(config_overrides=None):
                 return f"img/{stem}.{ext}"
         return fallback
 
+    from routes.profile import MODES, ROLES, default_mode
+
+    role_labels = {
+        "student": ("Student", "Visual charts and clear explanations"),
+        "researcher": ("Researcher / Scientist", "Full statistics, methods and data export"),
+        "educator": ("Educator", "Teaching-ready visuals and quizzes"),
+        "policy": ("Policy & Planning", "Risk summaries and regional comparisons"),
+        "farmer": ("Farmer / Agriculture", "Rain timing and seasonal outlooks"),
+        "everyday": ("Everyday user", "Simple weather and safety tips"),
+    }
+
     @app.context_processor
     def inject_profile():
         # Shown in the sidebar user card and top bar on every workspace page.
+        profile = session.get("profile") or {}
+        mode = profile.get("mode")
+        if mode not in MODES:
+            mode = default_mode(profile.get("role"))
         return {
-            "current_profile": session.get("profile") or {},
+            "current_profile": profile,
+            "insight_mode": mode,
+            "role_labels": role_labels,
+            "role_modes": ROLES,
+            "signed_in": bool(profile.get("name")),
             "mascot_image": first_image("omi-mascot", "img/omi-mascot.svg"),
             "avatar_image": first_image("avatar", "img/avatar-default.svg"),
         }
@@ -68,6 +87,30 @@ def create_app(config_overrides=None):
     @app.route("/settings")
     def settings():
         return render_template("settings.html")
+
+    @app.route("/signup")
+    def signup():
+        return render_template("signup.html")
+
+    @app.route("/login")
+    def login():
+        return render_template("login.html")
+
+    @app.route("/map")
+    def map_radar():
+        return render_template("map.html")
+
+    @app.route("/alerts")
+    def alerts_page():
+        return render_template("alerts.html")
+
+    @app.route("/route")
+    def route_page():
+        return render_template("route.html")
+
+    @app.route("/places")
+    def places_page():
+        return render_template("places.html")
 
     @app.route("/upload")
     def upload():

@@ -90,6 +90,21 @@ class Config:
         },
     }
 
+    # Places with live weather only (alerts, saved places, route weather).
+    # Climate trend analysis stays limited to REGIONS above.
+    PLACES = {
+        "lagos": {"id": "lagos", "name": "Lagos", "state": "Lagos", "latitude": 6.5244, "longitude": 3.3792},
+        "edo": {"id": "edo", "name": "Benin City", "state": "Edo", "latitude": 6.3350, "longitude": 5.6037},
+        "ibadan": {"id": "ibadan", "name": "Ibadan", "state": "Oyo", "latitude": 7.3775, "longitude": 3.9470},
+        "abuja": {"id": "abuja", "name": "Abuja", "state": "FCT", "latitude": 9.0765, "longitude": 7.3986},
+        "port-harcourt": {"id": "port-harcourt", "name": "Port Harcourt", "state": "Rivers", "latitude": 4.8156, "longitude": 7.0498},
+        "kano": {"id": "kano", "name": "Kano", "state": "Kano", "latitude": 12.0022, "longitude": 8.5920},
+        "enugu": {"id": "enugu", "name": "Enugu", "state": "Enugu", "latitude": 6.4584, "longitude": 7.5464},
+        "lokoja": {"id": "lokoja", "name": "Lokoja", "state": "Kogi", "latitude": 7.8023, "longitude": 6.7333},
+        "kaduna": {"id": "kaduna", "name": "Kaduna", "state": "Kaduna", "latitude": 10.5105, "longitude": 7.4165},
+        "jos": {"id": "jos", "name": "Jos", "state": "Plateau", "latitude": 9.8965, "longitude": 8.8583},
+    }
+
     VARIABLES = {
         "temperature": {
             "id": "temperature",

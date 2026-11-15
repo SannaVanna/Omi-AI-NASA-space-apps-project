@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set active_page = 'places' %}
+{% block title %}Saved Places — Omi AI{% endblock %}
+{% block page_title %}Saved Places{% endblock %}
+
+{% block content %}
+<div class="v2-page" data-places-page>
+  <div class="v2-head">
+    <div>
+      <h1>Saved Places</h1>
+      <p>Omi watches these places for alerts. The first one is your home.</p>
+    </div>
+  </div>
+  <div class="places-layout">
+    <section class="v2-card">
+      <div class="v2-card-head"><h2>Your places</h2><span class="muted" data-places-count></span></div>
+      <ul class="places-list" data-places-list aria-live="polite"></ul>
+    </section>
+    <section class="v2-card">
+      <div class="v2-card-head"><h2>Add a place</h2></div>
+      <label class="sr-only" for="place-search">Search places</label>
+      <input id="place-search" class="form-input" type="search" placeholder="Search a city…" data-place-search autocomplete="off">
+      <ul class="places-add" data-places-add></ul>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/pages-v2.js') }}"></script>{% endblock %}

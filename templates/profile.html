@@ -19,7 +19,7 @@
         <div class="meta-line">
           <span id="profile-display-email">{{ user.email if user and user.email else 'researcher@omi-ai.org' }}</span>
           <span class="meta-sep" aria-hidden="true">·</span>
-          <span>{{ user.role if user and user.role else 'Environmental Analyst' }}</span>
+          <span>{{ role_labels[user.role][0] if user and user.role in role_labels else 'Omi member' }}</span>
         </div>
       </div>
     </div>
@@ -57,8 +57,10 @@
         </div>
 
         <div class="form-field">
-          <label for="profile-role-input" class="form-label">Research Role</label>
-          <input id="profile-role-input" name="role" type="text" class="form-input" value="{{ user.role if user and user.role else 'Environmental Analyst' }}">
+          <label for="profile-role-input" class="form-label">I am a…</label>
+          <select id="profile-role-input" name="role" class="form-select">
+            {% for rid, info in role_labels.items() %}<option value="{{ rid }}" {% if user and user.role == rid %}selected{% endif %}>{{ info[0] }}</option>{% endfor %}
+          </select>
         </div>
       </div>
     </section>

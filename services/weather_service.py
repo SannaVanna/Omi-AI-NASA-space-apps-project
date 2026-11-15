@@ -9,6 +9,7 @@ This is *current weather*, shown for context. All trend analysis in Omi AI
 still uses NASA POWER climate records.
 """
 
+import math
 import threading
 import time
 from datetime import datetime, timedelta, timezone
@@ -237,6 +238,7 @@ def _shape(region, raw):
             "is_day": current["is_day"],
         },
         "hourly": [hour_view(h) for h in hours[1:7]],
+        "outlook": outlook(hours[:12]),
         "alert": rain_alert(hours, now),
         "updated": raw.get("updated"),
         "source": raw["source"],
@@ -244,8 +246,47 @@ def _shape(region, raw):
     }
 
 
+def resolve_place(place_id):
+    """A study region (Lagos, Edo) or one of the extra weather-only places."""
+    pid = str(place_id or "").lower()
+    if pid in current_app.config["REGIONS"]:
+        return get_region(pid)
+    place = current_app.config.get("PLACES", {}).get(pid)
+    if not place:
+        raise ValueError(f"Unknown place '{place_id}'.")
+    return place
+
+
+def outlook(hours):
+    """Summary of the next hours used for alerts and route weather."""
+    if not hours:
+        return {}
+    precip = [h.get("precipitation") or 0 for h in hours]
+    temps = [h["temperature"] for h in hours if h.get("temperature") is not None]
+    hums = [h["humidity"] for h in hours if h.get("humidity") is not None]
+    return {
+        "hours": len(hours),
+        "max_precip_mm": round(max(precip), 1),
+        "total_precip_mm": round(sum(precip), 1),
+        "thunder": any(h.get("condition") == "thunder" for h in hours),
+        "max_temp": round(max(temps)) if temps else None,
+        "min_humidity": round(min(hums)) if hums else None,
+    }
+
+
+def get_weather_point(lat, lon, name="Selected point"):
+    lat, lon = round(float(lat), 2), round(float(lon), 2)
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        raise ValueError("Latitude or longitude out of range.")
+    place = {"id": f"pt:{lat},{lon}", "name": name, "latitude": lat, "longitude": lon}
+    return _fetch(place)
+
+
 def get_weather(region_id):
-    region = get_region(region_id)
+    return _fetch(resolve_place(region_id))
+
+
+def _fetch(region):
     key = region["id"]
     with _lock:
         cached = _cache.get(key)
